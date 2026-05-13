@@ -1,0 +1,162 @@
+[
+     {
+          "title": "Atomic Habits",
+          "author": "James Clear",
+          "publisher": "Penguin Random House",
+          "language": "English",
+          "pages": 320,
+          "genre": "Self-help",
+          "edition": "1st Edition",
+          "isbn": "9780735211292",
+          "category": "book",
+          "description": "A practical guide to building good habits and breaking bad ones.",
+          "price": 450,
+          "oldPrice": 475,
+          "discount": 5,
+          "stock": 70,
+          "rating": 4.8,
+          "image": "/productImages/book1.jpg",
+          "gallery": [],
+          "offerTags": [
+               "Bestseller",
+               "Habit Building"
+          ]
+     },
+     {
+          "title": "The Psychology of Money",
+          "author": "Morgan Housel",
+          "publisher": "Harriman House",
+          "language": "English",
+          "pages": 252,
+          "genre": "Finance",
+          "edition": "1st Edition",
+          "isbn": "9780857197689",
+          "category": "book",
+          "description": "Timeless lessons on wealth, greed, and happiness.",
+          "price": 399,
+          "oldPrice": 420,
+          "discount": 4,
+          "stock": 60,
+          "rating": 4.7,
+          "image": "/productImages/book2.jpg",
+          "gallery": [],
+          "offerTags": [
+               "Top Rated",
+               "Finance"
+          ]
+     },
+     {
+          "title": "Rich Dad Poor Dad",
+          "author": "Robert Kiyosaki",
+          "publisher": "Plata Publishing",
+          "language": "English",
+          "pages": 336,
+          "genre": "Personal Finance",
+          "edition": "Updated Edition",
+          "isbn": "9781612680194",
+          "category": "book",
+          "description": "A personal finance classic that challenges traditional money beliefs.",
+          "price": 299,
+          "oldPrice": 320,
+          "discount": 6,
+          "stock": 80,
+          "rating": 4.6,
+          "image": "/productImages/book3.jpg",
+          "gallery": [],
+          "offerTags": [
+               "Finance Classic"
+          ]
+     },
+     {
+          "title": "Ikigai",
+          "author": "Héctor García",
+          "publisher": "Penguin Books",
+          "language": "English",
+          "pages": 208,
+          "genre": "Self-help",
+          "edition": "Paperback",
+          "isbn": "9781786330895",
+          "category": "book",
+          "description": "The Japanese secret to a long and happy life.",
+          "price": 350,
+          "oldPrice": 380,
+          "discount": 8,
+          "stock": 90,
+          "rating": 4.5,
+          "image": "/productImages/book4.jpg",
+          "gallery": [],
+          "offerTags": [
+               "Motivational",
+               "Bestseller"
+          ]
+     },
+     {
+          "title": "The Subtle Art of Not Giving a F*ck",
+          "author": "Mark Manson",
+          "publisher": "HarperOne",
+          "language": "English",
+          "pages": 224,
+          "genre": "Self-help",
+          "edition": "Paperback",
+          "isbn": "9780062457714",
+          "category": "book",
+          "description": "A counterintuitive approach to living a good life.",
+          "price": 499,
+          "oldPrice": 549,
+          "discount": 9,
+          "stock": 75,
+          "rating": 4.4,
+          "image": "/productImages/book5.jpg",
+          "gallery": [],
+          "offerTags": [
+               "Popular",
+               "Self-help"
+          ]
+     },
+     {
+          "title": "Think Like a Monk",
+          "author": "Jay Shetty",
+          "publisher": "HarperCollins",
+          "language": "English",
+          "pages": 352,
+          "genre": "Motivational",
+          "edition": "Hardcover",
+          "isbn": "9781982134488",
+          "category": "book",
+          "description": "Train your mind for peace and purpose every day.",
+          "price": 420,
+          "oldPrice": 450,
+          "discount": 7,
+          "stock": 65,
+          "rating": 4.6,
+          "image": "/productImages/book6.jpg",
+          "gallery": [],
+          "offerTags": [
+               "Motivational",
+               "Mindfulness"
+          ]
+     },
+     {
+          "title": "The 5 AM Club",
+          "author": "Robin Sharma",
+          "publisher": "HarperCollins",
+          "language": "English",
+          "pages": 336,
+          "genre": "Productivity",
+          "edition": "Hardcover",
+          "isbn": "9781443456623",
+          "category": "book",
+          "description": "Own your morning, elevate your life.",
+          "price": 410,
+          "oldPrice": 430,
+          "discount": 5,
+          "stock": 55,
+          "rating": 4.5,
+          "image": "/productImages/book7.jpg",
+          "gallery": [],
+          "offerTags": [
+               "Morning Routine",
+               "Inspiration"
+          ]
+     }
+]

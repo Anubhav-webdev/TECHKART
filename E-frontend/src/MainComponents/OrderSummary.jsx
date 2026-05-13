@@ -95,7 +95,7 @@ const OrderSummary = ({ onCheckout }) => {
 
      const fetchProducts = async () => {
           try {
-               const base = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '');
+               const base = (import.meta.env.VITE_API_URL?.trim() || '/api').replace(/\/+$/, '');
                const res = await fetch(`${base}/products`);
                if (!res.ok) {
                     const txt = await res.text().catch(() => null);

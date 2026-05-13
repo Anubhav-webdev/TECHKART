@@ -1,0 +1,561 @@
+// [
+//      {
+//           "name": "Realme 13 Pro+ 5G",
+//           "category": "mobile",
+//           "featured": true,
+//           "brand": "Realme",
+//           "price": 25999,
+//           "oldPrice": 28999,
+//           "discount": 10,
+//           "stock": 45,
+//           "description": "Stylish curved AMOLED display with Sony IMX890 sensor and Snapdragon 7s Gen 2 chip.",
+//           "image": "/productImages/mobile1.jpg",
+//           "rating": 4.4,
+//           "reviews": [
+//                {
+//                     "user": "Rakesh Paul",
+//                     "comment": "Camera is awesome for this price range.",
+//                     "rating": 5,
+//                     "date": "2025-10-10T11:45:00Z"
+//                }
+//           ],
+//           "specifications": {
+//                "display": "6.7-inch AMOLED, 120Hz",
+//                "processor": "Snapdragon 7s Gen 2",
+//                "ram": "8GB",
+//                "storage": "128GB",
+//                "battery": "5000mAh, 67W",
+//                "camera": "50MP + 8MP + 2MP | 32MP front",
+//                "os": "Android 14"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "iQOO Z9 5G",
+//           "category": "mobile",
+//           "brand": "iQOO",
+//           "price": 18999,
+//           "oldPrice": 21999,
+//           "discount": 14,
+//           "stock": 60,
+//           "description": "Performance-packed phone with AMOLED 120Hz display and Dimensity 7200 chip.",
+//           "image": "/productImages/mobile2.jpg",
+//           "rating": 4.3,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "6.67-inch AMOLED, 120Hz",
+//                "processor": "Dimensity 7200",
+//                "ram": "8GB",
+//                "storage": "128GB",
+//                "battery": "5000mAh, 44W",
+//                "camera": "50MP + 2MP | 16MP front",
+//                "os": "Android 14"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Google Pixel 8",
+//           "category": "mobile",
+//           "brand": "Google",
+//           "price": 69999,
+//           "oldPrice": 78999,
+//           "discount": 11,
+//           "stock": 18,
+//           "description": "Flagship phone with Tensor G3 and industry-leading camera AI.",
+//           "image": "/productImages/mobile3.jpg",
+//           "rating": 4.7,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "6.2-inch OLED, 120Hz",
+//                "processor": "Google Tensor G3",
+//                "ram": "8GB",
+//                "storage": "128GB",
+//                "battery": "4575mAh, 27W",
+//                "camera": "50MP + 12MP | 10.5MP front",
+//                "os": "Android 14"
+//           },
+//           "delivery": {
+//                "fastDelivery": false,
+//                "returnPolicy": "10 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Samsung Galaxy A35 5G",
+//           "category": "mobile",
+//           "featured": true,
+//           "brand": "Samsung",
+//           "price": 27999,
+//           "oldPrice": 30999,
+//           "discount": 10,
+//           "stock": 40,
+//           "description": "Premium design midrange phone with AMOLED display and strong battery backup.",
+//           "image": "/productImages/mobile4.jpg",
+//           "rating": 4.4,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "6.6-inch Super AMOLED, 120Hz",
+//                "processor": "Exynos 1380",
+//                "ram": "8GB",
+//                "storage": "128GB",
+//                "battery": "5000mAh, 25W",
+//                "camera": "50MP + 8MP + 5MP | 13MP front",
+//                "os": "Android 14"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Vivo V30 Pro 5G",
+//           "category": "mobile",
+//           "brand": "Vivo",
+//           "price": 41999,
+//           "oldPrice": 44999,
+//           "discount": 7,
+//           "stock": 25,
+//           "description": "Sleek phone with ZEISS optics and MediaTek Dimensity 8200 chip.",
+//           "image": "/productImages/mobile5.jpg",
+//           "rating": 4.5,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "6.78-inch AMOLED, 120Hz",
+//                "processor": "Dimensity 8200",
+//                "ram": "8GB",
+//                "storage": "256GB",
+//                "battery": "5000mAh, 80W",
+//                "camera": "50MP + 50MP + 50MP | 50MP front",
+//                "os": "Android 14"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "10 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Motorola Edge 50 Pro",
+//           "category": "mobile",
+//           "brand": "Motorola",
+//           "price": 33999,
+//           "oldPrice": 36999,
+//           "discount": 8,
+//           "stock": 30,
+//           "description": "Curved pOLED display, Snapdragon 7 Gen 3, and fast 125W charging.",
+//           "image": "/productImages/mobile6.jpg",
+//           "rating": 4.5,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "6.7-inch pOLED, 144Hz",
+//                "processor": "Snapdragon 7 Gen 3",
+//                "ram": "12GB",
+//                "storage": "256GB",
+//                "battery": "4600mAh, 125W",
+//                "camera": "50MP + 13MP + 10MP | 50MP front",
+//                "os": "Android 14"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "iPhone 15 Pro",
+//           "featured": true,
+//           "category": "mobile",
+//           "brand": "Apple",
+//           "price": 134999,
+//           "oldPrice": 139999,
+//           "discount": 4,
+//           "stock": 10,
+//           "description": "Titanium build, A17 Pro chip, and the most advanced iPhone camera yet.",
+//           "image": "/productImages/mobile7.jpg",
+//           "rating": 4.9,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "6.1-inch Super Retina XDR, ProMotion",
+//                "processor": "A17 Pro",
+//                "ram": "8GB",
+//                "storage": "256GB",
+//                "battery": "3274mAh",
+//                "camera": "48MP + 12MP + 12MP | 12MP front",
+//                "os": "iOS 17"
+//           },
+//           "delivery": {
+//                "fastDelivery": false,
+//                "returnPolicy": "15 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Acer Aspire 5 Ryzen 5",
+//           "category": "laptop",
+//           "brand": "Acer",
+//           "price": 49999,
+//           "oldPrice": 55999,
+//           "discount": 11,
+//           "stock": 50,
+//           "description": "Reliable performance laptop for students and professionals.",
+//           "image": "/productImages/laptop1.jpg",
+//           "rating": 4.3,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "15.6-inch FHD IPS",
+//                "processor": "Ryzen 5 7530U",
+//                "ram": "16GB",
+//                "storage": "512GB SSD",
+//                "battery": "8 hours",
+//                "camera": "720p",
+//                "os": "Windows 11 Home"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Lenovo IdeaPad Slim 5",
+//           "category": "laptop",
+//           "brand": "Lenovo",
+//           "price": 59999,
+//           "oldPrice": 63999,
+//           "discount": 6,
+//           "stock": 30,
+//           "description": "Lightweight laptop with OLED display and Ryzen 7 processor.",
+//           "image": "/productImages/laptop2.jpg",
+//           "rating": 4.5,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "14-inch 2.2K OLED",
+//                "processor": "Ryzen 7 7730U",
+//                "ram": "16GB",
+//                "storage": "512GB SSD",
+//                "battery": "10 hours",
+//                "camera": "1080p",
+//                "os": "Windows 11"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Dell Inspiron 14 Plus",
+//           "category": "laptop",
+//           "brand": "Dell",
+//           "price": 79999,
+//           "oldPrice": 87999,
+//           "discount": 9,
+//           "stock": 20,
+//           "description": "Premium ultrabook with Intel Core i7 and long battery life.",
+//           "image": "/productImages/laptop3.jpg",
+//           "rating": 4.6,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "14-inch QHD+ IPS, 100% sRGB",
+//                "processor": "Intel Core i7-1360P",
+//                "ram": "16GB",
+//                "storage": "512GB SSD",
+//                "battery": "12 hours",
+//                "camera": "1080p",
+//                "os": "Windows 11"
+//           },
+//           "delivery": {
+//                "fastDelivery": false,
+//                "returnPolicy": "10 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "HP Envy x360",
+//           "category": "laptop",
+//           "brand": "HP",
+//           "price": 89999,
+//           "oldPrice": 99999,
+//           "discount": 10,
+//           "stock": 15,
+//           "description": "Convertible touchscreen laptop with OLED display and Intel Core i7.",
+//           "image": "/productImages/laptop4.jpg",
+//           "rating": 4.7,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "13.3-inch OLED Touch, 120Hz",
+//                "processor": "Intel Core i7-1355U",
+//                "ram": "16GB",
+//                "storage": "512GB SSD",
+//                "battery": "11 hours",
+//                "camera": "5MP",
+//                "os": "Windows 11"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "MSI Katana 15",
+//           "category": "laptop",
+//           "brand": "MSI",
+//           "price": 104999,
+//           "oldPrice": 119999,
+//           "discount": 13,
+//           "stock": 12,
+//           "description": "Gaming laptop with RTX 4060 and Intel Core i7-13620H processor.",
+//           "image": "/productImages/laptop5.jpg",
+//           "rating": 4.6,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "15.6-inch FHD, 144Hz",
+//                "processor": "Intel Core i7-13620H",
+//                "ram": "16GB",
+//                "storage": "1TB SSD",
+//                "battery": "65Wh",
+//                "camera": "720p",
+//                "os": "Windows 11 Home"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "10 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Apple MacBook Pro M3",
+//           "featured": true,
+//           "category": "laptop",
+//           "brand": "Apple",
+//           "price": 159999,
+//           "oldPrice": 169999,
+//           "discount": 6,
+//           "stock": 8,
+//           "description": "Powerful laptop with M3 chip and Liquid Retina XDR display.",
+//           "image": "/productImages/laptop6.jpg",
+//           "rating": 4.9,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "14.2-inch Liquid Retina XDR",
+//                "processor": "Apple M3",
+//                "ram": "16GB",
+//                "storage": "512GB SSD",
+//                "battery": "18 hours",
+//                "camera": "1080p FaceTime HD",
+//                "os": "macOS Sequoia"
+//           },
+//           "delivery": {
+//                "fastDelivery": false,
+//                "returnPolicy": "14 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "ASUS ROG Zephyrus G14 (2025)",
+//           "featured": true,
+//           "category": "laptop",
+//           "brand": "ASUS",
+//           "price": 169999,
+//           "oldPrice": 179999,
+//           "discount": 6,
+//           "stock": 5,
+//           "description": "Compact gaming powerhouse with Ryzen 9 8945HS and RTX 4070.",
+//           "image": "/productImages/laptop7.jpg",
+//           "rating": 4.8,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "14-inch QHD+, 165Hz",
+//                "processor": "Ryzen 9 8945HS",
+//                "ram": "32GB",
+//                "storage": "1TB SSD",
+//                "battery": "76Wh",
+//                "camera": "1080p IR",
+//                "os": "Windows 11"
+//           },
+//           "delivery": {
+//                "fastDelivery": false,
+//                "returnPolicy": "10 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Samsung Galaxy Buds 3 Pro",
+//           "featured": true,
+//           "category": "gadget",
+//           "brand": "Samsung",
+//           "price": 18999,
+//           "oldPrice": 21999,
+//           "discount": 14,
+//           "stock": 35,
+//           "description": "Premium wireless earbuds with adaptive ANC and 360 Audio.",
+//           "image": "/productImages/ga1.jpg",
+//           "rating": 4.6,
+//           "reviews": [],
+//           "specifications": {
+//                "type": "Wireless Earbuds",
+//                "connectivity": "Bluetooth 5.3, USB-C",
+//                "battery": "30 hours playback",
+//                "features": "ANC, Ambient sound, IPX7"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "JBL Charge 6",
+//           "category": "gadget",
+//           "featured": true,
+//           "brand": "JBL",
+//           "price": 14999,
+//           "oldPrice": 17499,
+//           "discount": 15,
+//           "stock": 50,
+//           "description": "Portable Bluetooth speaker with deep bass and powerbank support.",
+//           "image": "/productImages/ga2.jpg",
+//           "rating": 4.5,
+//           "reviews": [],
+//           "specifications": {
+//                "type": "Bluetooth Speaker",
+//                "battery": "20 hours playback",
+//                "connectivity": "Bluetooth 5.3, AUX",
+//                "features": "IP67 waterproof, USB powerbank"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "GoPro Hero 13 Black",
+//           "category": "gadget",
+//           "featured": true,
+//           "brand": "GoPro",
+//           "price": 51999,
+//           "oldPrice": 55999,
+//           "discount": 7,
+//           "stock": 15,
+//           "description": "Action camera with 6K video recording and HyperSmooth 6.0 stabilization.",
+//           "image": "/productImages/ga3.jpg",
+//           "rating": 4.7,
+//           "reviews": [],
+//           "specifications": {
+//                "type": "Action Camera",
+//                "battery": "1720mAh removable",
+//                "features": "6K60 recording, waterproof, voice control"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "10 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Apple AirPods Max 2",
+//           "category": "gadget",
+//           "featured": true,
+//           "brand": "Apple",
+//           "price": 59999,
+//           "oldPrice": 63999,
+//           "discount": 6,
+//           "stock": 10,
+//           "description": "Premium over-ear headphones with adaptive transparency and H2 chip.",
+//           "image": "/productImages/ga4.jpg",
+//           "rating": 4.8,
+//           "reviews": [],
+//           "specifications": {
+//                "type": "Over-ear Headphones",
+//                "connectivity": "Bluetooth 5.3, Lightning",
+//                "battery": "30 hours playback",
+//                "features": "ANC, spatial audio, transparency mode"
+//           },
+//           "delivery": {
+//                "fastDelivery": false,
+//                "returnPolicy": "15 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Amazfit Active Edge",
+//           "category": "gadget",
+//           "brand": "Amazfit",
+//           "price": 9999,
+//           "oldPrice": 11999,
+//           "discount": 17,
+//           "stock": 45,
+//           "description": "Rugged smartwatch with 100+ sports modes and 10ATM water resistance.",
+//           "image": "/productImages/ga5.jpg",
+//           "rating": 4.4,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "1.32-inch AMOLED",
+//                "battery": "16 days",
+//                "features": "SpO2, heart rate, GPS, 10ATM",
+//                "compatibility": "Android & iOS"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "OnePlus Pad 2",
+//           "category": "gadget",
+//           "brand": "OnePlus",
+//           "price": 37999,
+//           "oldPrice": 42999,
+//           "discount": 12,
+//           "stock": 20,
+//           "description": "11.6-inch LCD tablet with Snapdragon 8 Gen 3 chip and 144Hz refresh rate.",
+//           "image": "/productImages/ga6.jpg",
+//           "rating": 4.6,
+//           "reviews": [],
+//           "specifications": {
+//                "display": "11.6-inch LCD, 144Hz",
+//                "battery": "9510mAh",
+//                "features": "Dolby Vision, Stylus support, 67W fast charging"
+//           },
+//           "delivery": {
+//                "fastDelivery": false,
+//                "returnPolicy": "10 days",
+//                "warranty": "1 year"
+//           }
+//      },
+//      {
+//           "name": "Samsung Galaxy SmartTag 2",
+//           "category": "gadget",
+//           "brand": "Samsung",
+//           "price": 2999,
+//           "oldPrice": 3999,
+//           "discount": 25,
+//           "stock": 100,
+//           "description": "Bluetooth tracker with ultra-wideband precision finding and long battery life.",
+//           "image": "/productImages/ga7.jpg",
+//           "rating": 4.3,
+//           "reviews": [],
+//           "specifications": {
+//                "type": "Bluetooth Tracker",
+//                "battery": "Up to 1 year replaceable",
+//                "features": "UWB tracking, IP67 water resistance, SmartThings Find"
+//           },
+//           "delivery": {
+//                "fastDelivery": true,
+//                "returnPolicy": "7 days",
+//                "warranty": "1 year"
+//           }
+//      }
+// ]
