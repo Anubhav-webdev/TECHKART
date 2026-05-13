@@ -122,10 +122,11 @@ export const CartProvider = ({ children }) => {
      // Reservation helpers (talk to backend)
      // -------------------------
      const { adjustStock, setStock } = useStock();
+     const apiBase = (import.meta.env.VITE_API_URL?.trim() || '/api').replace(/\/\/+$/, '');
 
      const reserveProduct = async (id, qty = 1) => {
           try {
-               const res = await fetch(`/api/products/${id}/reserve`, {
+               const res = await fetch(`${apiBase}/products/${id}/reserve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quantity: qty })
@@ -143,7 +144,7 @@ export const CartProvider = ({ children }) => {
 
      const releaseProduct = async (id, qty = 1) => {
           try {
-               const res = await fetch(`/api/products/${id}/release`, {
+               const res = await fetch(`${apiBase}/products/${id}/release`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quantity: qty })
