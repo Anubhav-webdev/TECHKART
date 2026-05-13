@@ -189,7 +189,7 @@ export default function ProductCarousel({ title, category, featured }) {
 
      useEffect(() => {
           // Use relative path so Vite proxy / current origin handles backend during dev and avoids mixed-content issues
-          fetch("/api/products")
+          fetch("https://techkart-ava8.onrender.com/api/products")
                .then(async (res) => {
                     if (!res.ok) {
                          const text = await res.text().catch(() => null);
