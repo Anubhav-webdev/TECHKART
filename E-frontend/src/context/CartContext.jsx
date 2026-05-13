@@ -1,268 +1,342 @@
 // React imports for context + state management
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useAuth } from './AuthContext';
-import { useStock } from './StockContext';
+import { useAuth } from "./AuthContext";
+import { useStock } from "./StockContext";
 
-// Create a context for Cart
+// Create Cart Context
 const CartContext = createContext();
 
-// Custom hook to access Cart context easily
+// Custom Hook
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
      const { user } = useAuth();
 
-     // Load cart from localStorage on first render (robust parsing)
+     // Backend API Base URL
+     const API =
+          import.meta.env.VITE_API_URL?.trim() ||
+          "https://techkart-ava8.onrender.com/api";
+
+     // Load cart from localStorage
      const [cart, setCart] = useState(() => {
           try {
                const saved = localStorage.getItem("cart");
                return saved ? JSON.parse(saved) : [];
-          } catch (e) {
-               console.warn('CartContext: could not parse localStorage cart', e);
+          } catch (err) {
+               console.warn("Cart parse error:", err);
                return [];
           }
      });
 
-     // ⛅ Keep cart saved in localStorage whenever it changes (guarded)
+     // Save cart to localStorage
      useEffect(() => {
           try {
                localStorage.setItem("cart", JSON.stringify(cart));
-          } catch (e) {
-               console.warn('CartContext: failed to save cart to localStorage', e);
+          } catch (err) {
+               console.warn("Cart save error:", err);
           }
      }, [cart]);
 
-     // Remote cart helpers (no automatic sync). Use these manually when you need to fetch or persist cart on the server.
-     const fetchRemoteCart = async (uid) => {
-          if (!uid && user?.id) uid = user.id;
-          if (!uid) return null;
-          try {
-               const res = await fetch(`/api/users/${uid}/cart`);
-               if (!res.ok) return null;
-               const data = await res.json();
-               const normalized = (data.cart || []).map(c => ({ ...c.product, quantity: c.quantity }));
-               return normalized;
-          } catch (err) {
-               console.error('fetchRemoteCart failed:', err);
-               return null;
-          }
-     };
-
-     const saveRemoteCart = async (uid, cartToSave) => {
-          if (!uid && user?.id) uid = user.id;
-          if (!uid) return false;
-          try {
-               const payload = (cartToSave || cart).map(item => ({ product: item._id, quantity: item.quantity }));
-               const res = await fetch(`/api/users/${uid}/cart`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cart: payload })
-               });
-               return res.ok;
-          } catch (err) {
-               console.error('saveRemoteCart failed:', err);
-               return false;
-          }
-     };
-
-     // Merge remote cart into local cart (strategy: 'preferLocal' adds quantities, 'preferRemote' overwrites local quantities)
-     const mergeRemoteCart = async (uid, strategy = 'preferLocal') => {
-          const remote = await fetchRemoteCart(uid);
-          if (!remote) return false;
-          const mergedMap = new Map();
-
-          // Add local items first
-          cart.forEach(i => mergedMap.set(i._id, { ...i }));
-
-          // Merge remote
-          remote.forEach(i => {
-               const id = i._id;
-               if (mergedMap.has(id)) {
-                    if (strategy === 'preferRemote') {
-                         mergedMap.set(id, { ...i });
-                    } else {
-                         const local = mergedMap.get(id);
-                         mergedMap.set(id, { ...local, quantity: (local.quantity || 0) + (i.quantity || 0) });
-                    }
-               } else {
-                    mergedMap.set(id, { ...i });
-               }
-          });
-
-          setCart(Array.from(mergedMap.values()));
-          return true;
-     };
-
-     // NOTE: Automatic fetching/saving of cart to server was removed to prevent unintended overwrites/duplication of cart items.
-     // Use fetchRemoteCart(), saveRemoteCart(uid) or mergeRemoteCart(uid) explicitly when needed.
-
-     // (Previously, cart was automatically saved to server on each change; this behaviour has been removed to avoid unintended duplication.
-     // Use saveRemoteCart(uid) to persist when desired.)
-
-     // When user logs out, clear cart from UI and localStorage so checkout data is not visible after logout
-     useEffect(() => {
-          if (!user) {
-               // If a logged-in user logs out, release any reserved stock held in the cart
-               (async () => {
-                    try {
-                         await releaseAllFromCart();
-                    } catch (err) {
-                         console.warn('Failed to release reserved stock on logout', err);
-                    }
-                    try {
-                         localStorage.removeItem('cart');
-                    } catch (err) {
-                         // ignore
-                    }
-               })();
-          }
-     }, [user]);
-
-     // -------------------------
-     // Reservation helpers (talk to backend)
-     // -------------------------
+     // Stock Context
      const { adjustStock, setStock } = useStock();
 
+     // =========================
+     // RESERVE PRODUCT
+     // =========================
      const reserveProduct = async (id, qty = 1) => {
           try {
-               const res = await fetch(`/api/products/${id}/reserve`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quantity: qty })
+               const res = await fetch(`${API}/products/${id}/reserve`, {
+                    method: "POST",
+                    headers: {
+                         "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                         quantity: qty,
+                    }),
                });
-               const data = await res.json();
-               if (!res.ok) throw new Error(data.message || 'Reserve failed');
-               if (data && typeof data.stock === 'number') setStock(id, data.stock);
-               else adjustStock(id, -qty);
-               return { ok: true, stock: data && data.stock };
+
+               // Read response safely
+               const text = await res.text();
+
+               console.log("Reserve Response:", text);
+
+               let data = {};
+
+               try {
+                    data = text ? JSON.parse(text) : {};
+               } catch (err) {
+                    console.error("Invalid JSON:", text);
+
+                    return {
+                         ok: false,
+                         error: "Server returned invalid response",
+                    };
+               }
+
+               // Handle failed response
+               if (!res.ok) {
+                    return {
+                         ok: false,
+                         error: data.message || "Reserve failed",
+                    };
+               }
+
+               // Update stock
+               if (typeof data.stock === "number") {
+                    setStock(id, data.stock);
+               } else {
+                    adjustStock(id, -qty);
+               }
+
+               return {
+                    ok: true,
+                    stock: data.stock,
+               };
           } catch (err) {
-               console.error('reserveProduct failed', err);
-               return { ok: false, error: err.message || String(err) };
+               console.error("reserveProduct failed:", err);
+
+               return {
+                    ok: false,
+                    error: err.message || "Server error",
+               };
           }
      };
 
+     // =========================
+     // RELEASE PRODUCT
+     // =========================
      const releaseProduct = async (id, qty = 1) => {
           try {
-               const res = await fetch(`/api/products/${id}/release`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quantity: qty })
+               const res = await fetch(`${API}/products/${id}/release`, {
+                    method: "POST",
+                    headers: {
+                         "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                         quantity: qty,
+                    }),
                });
-               const data = await res.json();
-               if (!res.ok) throw new Error(data.message || 'Release failed');
-               if (data && typeof data.stock === 'number') setStock(id, data.stock);
-               else adjustStock(id, qty);
-               return { ok: true, stock: data && data.stock };
+
+               // Safe response parsing
+               const text = await res.text();
+
+               console.log("Release Response:", text);
+
+               let data = {};
+
+               try {
+                    data = text ? JSON.parse(text) : {};
+               } catch (err) {
+                    console.error("Invalid JSON:", text);
+
+                    return {
+                         ok: false,
+                         error: "Server returned invalid response",
+                    };
+               }
+
+               if (!res.ok) {
+                    return {
+                         ok: false,
+                         error: data.message || "Release failed",
+                    };
+               }
+
+               // Update stock
+               if (typeof data.stock === "number") {
+                    setStock(id, data.stock);
+               } else {
+                    adjustStock(id, qty);
+               }
+
+               return {
+                    ok: true,
+                    stock: data.stock,
+               };
           } catch (err) {
-               console.error('releaseProduct failed', err);
-               return { ok: false, error: err.message || String(err) };
+               console.error("releaseProduct failed:", err);
+
+               return {
+                    ok: false,
+                    error: err.message || "Server error",
+               };
           }
      };
 
-     // -------------------------
-     // 🚀 Add product to cart
-     // If exists → increase quantity (reservation performed)
-     // If new → add with quantity = 1 (reservation performed)
-     // -------------------------
+     // =========================
+     // ADD TO CART
+     // =========================
      const addToCart = async (product) => {
-          if (!product || !product._id) return { ok: false, error: 'Invalid product' };
+          if (!product || !product._id) {
+               return {
+                    ok: false,
+                    error: "Invalid product",
+               };
+          }
 
-          const r = await reserveProduct(product._id, 1);
-          if (!r.ok) return { ok: false, error: r.error || 'Insufficient stock' };
+          // Reserve stock first
+          const reserve = await reserveProduct(product._id, 1);
 
+          if (!reserve.ok) {
+               return {
+                    ok: false,
+                    error: reserve.error || "Insufficient stock",
+               };
+          }
+
+          // Add product to cart
           setCart((prev) => {
-               const exists = prev.find((item) => item._id === product._id);
+               const exists = prev.find(
+                    (item) => item._id === product._id
+               );
 
                if (exists) {
                     return prev.map((item) =>
                          item._id === product._id
-                              ? { ...item, quantity: item.quantity + 1 }
+                              ? {
+                                     ...item,
+                                     quantity: item.quantity + 1,
+                                }
                               : item
                     );
                }
 
-               return [...prev, { ...product, quantity: 1 }];
+               return [
+                    ...prev,
+                    {
+                         ...product,
+                         quantity: 1,
+                    },
+               ];
           });
 
-          return { ok: true };
+          return {
+               ok: true,
+          };
      };
 
-     // ➕ Increase quantity from cart page (+ button)
+     // =========================
+     // INCREASE QUANTITY
+     // =========================
      const addFromCart = async (id) => {
-          const r = await reserveProduct(id, 1);
-          if (!r.ok) return { ok: false, error: r.error };
+          const reserve = await reserveProduct(id, 1);
+
+          if (!reserve.ok) {
+               return {
+                    ok: false,
+                    error: reserve.error,
+               };
+          }
 
           setCart((prev) =>
                prev.map((item) =>
                     item._id === id
-                         ? { ...item, quantity: item.quantity + 1 }
+                         ? {
+                                ...item,
+                                quantity: item.quantity + 1,
+                           }
                          : item
                )
           );
-          return { ok: true };
+
+          return {
+               ok: true,
+          };
      };
 
-     // ➖ Decrease quantity from cart page (– button)
-     // If quantity becomes 0 → remove item (release reservation)
+     // =========================
+     // DECREASE QUANTITY
+     // =========================
      const removeFromCart = async (id) => {
-          // release one unit on server
           try {
-               const r = await releaseProduct(id, 1);
-               if (!r.ok) console.warn('release failed when removing from cart', r.error);
+               await releaseProduct(id, 1);
           } catch (err) {
-               console.warn('release call failed', err);
+               console.warn("Release failed:", err);
           }
 
           setCart((prev) =>
                prev
                     .map((item) =>
                          item._id === id
-                              ? { ...item, quantity: item.quantity - 1 }
+                              ? {
+                                     ...item,
+                                     quantity: item.quantity - 1,
+                                }
                               : item
                     )
                     .filter((item) => item.quantity > 0)
           );
-          return { ok: true };
+
+          return {
+               ok: true,
+          };
      };
 
-     // ❌ Remove a single product completely
+     // =========================
+     // REMOVE COMPLETE PRODUCT
+     // =========================
      const allClearFromCart = async (id) => {
-          const item = cart.find(i => i._id === id);
+          const item = cart.find((i) => i._id === id);
+
           if (item) {
-               try {
-                    const r = await releaseProduct(id, item.quantity || 0);
-                    if (!r.ok) console.warn('release failed when clearing', r.error);
-               } catch (err) {
-                    console.warn('release call failed', err);
-               }
+               await releaseProduct(id, item.quantity || 0);
           }
 
-          setCart((prev) => prev.filter((item) => item._id !== id));
-          return { ok: true };
+          setCart((prev) =>
+               prev.filter((item) => item._id !== id)
+          );
+
+          return {
+               ok: true,
+          };
      };
 
-     // 🛒 Remove all items at once (used after successful checkout — do NOT release reserved stock)
-     const clearCart = () => setCart([]);
-
-     // Release reservations for all items then clear (use when user explicitly empties cart)
-     const releaseAllFromCart = async () => {
-          const items = [...cart];
-          for (const it of items) {
-               if (!it || !it._id) continue;
-               const qty = it.quantity || 0;
-               if (qty > 0) {
-                    try {
-                         const r = await releaseProduct(it._id, qty);
-                         if (!r.ok) console.warn('releaseAllFromCart: failed for', it._id, r.error);
-                    } catch (err) {
-                         console.warn('releaseAllFromCart error', err);
-                    }
-               }
-          }
+     // =========================
+     // CLEAR CART
+     // =========================
+     const clearCart = () => {
           setCart([]);
      };
 
-     // 💰 Calculate total price of entire cart
+     // =========================
+     // RELEASE ALL CART STOCK
+     // =========================
+     const releaseAllFromCart = async () => {
+          const items = [...cart];
+
+          for (const item of items) {
+               if (!item?._id) continue;
+
+               const qty = item.quantity || 0;
+
+               if (qty > 0) {
+                    await releaseProduct(item._id, qty);
+               }
+          }
+
+          setCart([]);
+     };
+
+     // =========================
+     // CLEAR CART ON LOGOUT
+     // =========================
+     useEffect(() => {
+          if (!user) {
+               (async () => {
+                    try {
+                         await releaseAllFromCart();
+                    } catch (err) {
+                         console.warn("Release all failed:", err);
+                    }
+
+                    localStorage.removeItem("cart");
+               })();
+          }
+     }, [user]);
+
+     // =========================
+     // TOTAL PRICE
+     // =========================
      const total = cart.reduce(
           (acc, item) => acc + item.price * item.quantity,
           0
@@ -272,6 +346,7 @@ export const CartProvider = ({ children }) => {
           <CartContext.Provider
                value={{
                     cart,
+                    total,
                     addToCart,
                     addFromCart,
                     removeFromCart,
@@ -279,11 +354,6 @@ export const CartProvider = ({ children }) => {
                     clearCart,
                     reserveProduct,
                     releaseProduct,
-                    total,
-                    // manual helpers — no automatic server sync is performed
-                    fetchRemoteCart,
-                    saveRemoteCart,
-                    mergeRemoteCart,
                     releaseAllFromCart,
                }}
           >
