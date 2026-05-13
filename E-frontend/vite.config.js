@@ -8,13 +8,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:7000',
+        target: 'https://techkart-ava8.onrender.com',
         changeOrigin: true,
         secure: false,
       },
       // Also proxy asset requests (optional) if you serve static assets from backend
       '/assets': {
-        target: 'http://localhost:7000',
+        target: 'https://techkart-ava8.onrender.com',
         changeOrigin: true,
         secure: false,
       },
