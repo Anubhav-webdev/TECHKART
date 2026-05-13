@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 
-const API_URL = "http://localhost:7000/api/books";
+const API_URL = "https://techkart-ava8.onrender.com/api/books";
 
 // INITIAL BOOK DATA
 const initialBookData = {

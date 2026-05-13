@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:7000/api/blogs";
+const API_URL = "https://techkart-ava8.onrender.com/api/blogs";
 
 const initialBlogData = {
      image: "",

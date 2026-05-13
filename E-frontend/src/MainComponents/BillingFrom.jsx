@@ -101,7 +101,7 @@ const BillingForm = ({ onFormUpdate }) => {
           if (!validate()) return;
 
           try {
-               const res = await fetch("http://localhost:7000/api/billing/add", {
+               const res = await fetch("https://techkart-ava8.onrender.com/api/billing/add", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ ...form, userId: user.id }),
