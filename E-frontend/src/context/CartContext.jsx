@@ -58,7 +58,7 @@ export const CartProvider = ({ children }) => {
           if (!uid) return false;
           try {
                const payload = (cartToSave || cart).map(item => ({ product: item._id, quantity: item.quantity }));
-               const res = await fetch(`/api/users/${uid}/cart`, {
+               const res = await fetch(`${apiBase}/users/${uid}/cart`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cart: payload })

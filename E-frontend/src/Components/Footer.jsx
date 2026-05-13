@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
      FaFacebookF, FaTwitter, FaYoutube, FaPinterest, 
@@ -18,13 +19,13 @@ const SocialIcon = ({ Icon, color }) => (
 
 const FooterLink = ({ href, text }) => (
      <li>
-          <a
-               href={href}
+          <Link
+               to={href}
                className="group relative text-gray-400 hover:text-cyan-300 transition-colors duration-300 inline-block"
           >
                {text}
                <span className="absolute left-0 bottom-0 w-0 h-px bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
-          </a>
+          </Link>
      </li>
 );
 
@@ -136,7 +137,7 @@ const Footer = () => {
 
                          <FooterSection title="Quick Links" underlineColor="bg-cyan-500">
                               <ul className="space-y-3 text-sm">
-                                   <FooterLink href="/#" text="Home" />
+                                   <FooterLink href="/" text="Home" />
                                    <FooterLink href="/wishlist" text="Wishlist" />
                                    <FooterLink href="/cart" text="Cart" />
                               </ul>
