@@ -29,8 +29,8 @@ export const StockProvider = ({ children }) => {
 
   const fetchAndSetStocks = useCallback(async (ids = []) => {
     try {
-      // Default to '/api' which Vite proxies to the backend in development.
-      const base = (import.meta.env.VITE_API_URL?.trim() || '/api').replace(/\/+$/, '');
+      // Default to Vite proxy in development, or the deployed backend in production.
+      const base = (import.meta.env.VITE_API_URL?.trim() || 'https://techkart-ava8.onrender.com/api').replace(/\/+$/, '');
       let url = `${base}/products`;
       if (Array.isArray(ids) && ids.length > 0) {
         // Try API with ids query param; server may ignore it and return all products
