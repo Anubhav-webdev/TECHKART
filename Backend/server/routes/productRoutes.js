@@ -8,9 +8,12 @@ const router = express.Router();
 // GET ALL PRODUCTS
 router.get("/", async (req, res) => {
      try {
+          console.log("📦 Fetching all products...");
           const products = await Product.find();
           const books = await Book.find();
           const tshirts = await TShirt.find();
+
+          console.log(`✅ Found: ${products.length} products, ${books.length} books, ${tshirts.length} t-shirts`);
 
           const transformedItems = [...products, ...books, ...tshirts].map((item) => {
                const obj = item.toObject();
@@ -30,6 +33,7 @@ router.get("/", async (req, res) => {
 
           res.status(200).json(transformedItems);
      } catch (err) {
+          console.error("❌ Products fetch error:", err);
           res.status(500).json({ message: "Server error", error: err.message });
      }
 });
@@ -54,31 +58,43 @@ router.get("/count", async (req, res) => {
 router.post('/:id/reserve', async (req, res) => {
      const qty = Math.max(1, Number(req.body.quantity) || 1);
      try {
+          console.log(`🛒 Reserving ${qty} units of product ${req.params.id}...`);
+          
           // Try each collection in order
           let updated = await Product.findOneAndUpdate(
                { _id: req.params.id, stock: { $gte: qty } },
                { $inc: { stock: -Math.abs(qty) } },
                { new: true }
           );
-          if (updated) return res.status(200).json({ message: 'Reserved', stock: updated.stock, type: 'product' });
+          if (updated) {
+               console.log(`✅ Reserved from Product: ${updated._id}, remaining stock: ${updated.stock}`);
+               return res.status(200).json({ message: 'Reserved', stock: updated.stock, type: 'product' });
+          }
 
           updated = await Book.findOneAndUpdate(
                { _id: req.params.id, stock: { $gte: qty } },
                { $inc: { stock: -Math.abs(qty) } },
                { new: true }
           );
-          if (updated) return res.status(200).json({ message: 'Reserved', stock: updated.stock, type: 'book' });
+          if (updated) {
+               console.log(`✅ Reserved from Book: ${updated._id}, remaining stock: ${updated.stock}`);
+               return res.status(200).json({ message: 'Reserved', stock: updated.stock, type: 'book' });
+          }
 
           updated = await TShirt.findOneAndUpdate(
                { _id: req.params.id, stock: { $gte: qty } },
                { $inc: { stock: -Math.abs(qty) } },
                { new: true }
           );
-          if (updated) return res.status(200).json({ message: 'Reserved', stock: updated.stock, type: 'tshirt' });
+          if (updated) {
+               console.log(`✅ Reserved from TShirt: ${updated._id}, remaining stock: ${updated.stock}`);
+               return res.status(200).json({ message: 'Reserved', stock: updated.stock, type: 'tshirt' });
+          }
 
+          console.warn(`⚠️ Cannot reserve: insufficient stock or item not found for ${req.params.id}`);
           return res.status(400).json({ message: 'Insufficient stock or item not found' });
      } catch (err) {
-          console.error('Reserve endpoint error:', err);
+          console.error('❌ Reserve endpoint error:', err);
           return res.status(500).json({ message: 'Server error', error: err.message });
      }
 });

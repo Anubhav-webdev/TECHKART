@@ -125,7 +125,7 @@ export const CartProvider = ({ children }) => {
      // Reservation helpers (talk to backend)
      // -------------------------
      const { adjustStock, setStock } = useStock();
-     const apiBase = (import.meta.env.VITE_API_URL?.trim() || 'https://techkart-ava8.onrender.com/api').replace(/\/\/+$/, '');
+     const apiBase = (import.meta.env.VITE_API_URL?.trim() || 'https://techkart-ava8.onrender.com/api').replace(/\/+$/, '');
 
 
      const reserveProduct = async (id, qty = 1) => {

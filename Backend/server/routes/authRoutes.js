@@ -11,8 +11,16 @@ router.post("/signup", async (req, res) => {
   const { username, email, phone, password } = req.body;
 
   try {
+    // Normalize inputs to lowercase for consistency
+    const normalizedUsername = String(username || "").trim().toLowerCase();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    
+    if (!normalizedUsername || !normalizedEmail || !phone || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
     const exists = await User.findOne({
-      $or: [{ email }, { phone }, { username }]
+      $or: [{ email: normalizedEmail }, { phone }, { username: normalizedUsername }]
     });
 
     if (exists) {
@@ -22,8 +30,8 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      username,
-      email,
+      username: normalizedUsername,
+      email: normalizedEmail,
       phone,
       password: hashedPassword,
       role: "user"
@@ -83,14 +91,15 @@ if (
 
     /* ---------- USER LOGIN ---------- */
     // Normalize username identifier to match schema normalization (username is lowercase in schema)
+    const normalizedId = id.toLowerCase();
+    
     const user = await User.findOne({
       $or: [
-        { username: id },
-        { email: id },
+        { username: normalizedId },
+        { email: normalizedId },
         { phone: identifier?.toString().trim() }
       ]
     });
-
 
     if (!user) {
       return res.status(400).json({ message: "User not found" });
