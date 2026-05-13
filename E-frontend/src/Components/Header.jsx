@@ -5,6 +5,20 @@ import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { adminProtectKey } from "../constants/adminRoute";
+import {
+  Mobile,
+  Laptop,
+  Gadgets,
+  Books,
+  TShirts,
+  Wishlist,
+  Blog,
+  LoginAndSignup,
+  Info,
+  Profile,
+  Cart,
+  BreakingNewsPage,
+} from "../routeComponents";
 
 
 import {
@@ -45,17 +59,25 @@ const Header = () => {
 
      const navLinks = [
           { name: "Home", to: "/", icon: FaHome },
-          { name: "Blog", to: "/blog", icon: FaNewspaper },
-          { name: "Info", to: "/info", icon: FaInfoCircle },
+          { name: "Blog", to: "/blog", icon: FaNewspaper, preload: Blog.preload },
+          { name: "Info", to: "/info", icon: FaInfoCircle, preload: Info.preload },
      ];
 
      const shopLinks = [
-          { name: "Mobiles", to: "/shop/mobiles", icon: FaMobileAlt },
-          { name: "Laptops", to: "/shop/laptops", icon: FaLaptop },
-          { name: "Gadgets", to: "/shop/gadgets", icon: FaTabletAlt },
-          { name: "Books", to: "/shop/books", icon: FaBook },
-          { name: "T-Shirts", to: "/shop/t-shirts", icon: FaTshirt },
+          { name: "Mobiles", to: "/shop/mobiles", icon: FaMobileAlt, preload: Mobile.preload },
+          { name: "Laptops", to: "/shop/laptops", icon: FaLaptop, preload: Laptop.preload },
+          { name: "Gadgets", to: "/shop/gadgets", icon: FaTabletAlt, preload: Gadgets.preload },
+          { name: "Books", to: "/shop/books", icon: FaBook, preload: Books.preload },
+          { name: "T-Shirts", to: "/shop/t-shirts", icon: FaTshirt, preload: TShirts.preload },
      ];
+
+     const prefetchShopRoutes = () => {
+          Mobile.preload();
+          Laptop.preload();
+          Gadgets.preload();
+          Books.preload();
+          TShirts.preload();
+     };
 
      return (
           <nav
@@ -85,6 +107,7 @@ const Header = () => {
                               <NavLink
                                    key={link.name}
                                    to={link.to}
+                                   onMouseEnter={link.preload}
                                    className={({ isActive }) =>
                                         `px-4 py-2 rounded-full text-sm font-medium transition 
                                         ${isActive
@@ -100,6 +123,7 @@ const Header = () => {
                          <div className="relative">
                               <button
                                    onClick={() => setIsShopOpen((o) => !o)}
+                                   onMouseEnter={prefetchShopRoutes}
                                    className="flex items-center gap-1 text-gray-300 hover:text-cyan-400 transition"
                               >
                                    Shop <FaChevronDown className={`transition transform ${isShopOpen ? "rotate-180" : ""}`} />
@@ -118,6 +142,7 @@ const Header = () => {
                                         <NavLink
                                              key={link.name}
                                              to={link.to}
+                                             onMouseEnter={link.preload}
                                              className="px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-cyan-400 flex items-center gap-2"
                                         >
                                              <link.icon className="opacity-70" /> {link.name}
@@ -131,7 +156,7 @@ const Header = () => {
                     <div className="flex items-center gap-5">
 
                          {/* Wishlist */}
-                         <NavLink className="relative text-gray-300 hover:text-red-500 transition hidden lg:block" to="/wishlist">
+                         <NavLink onMouseEnter={Wishlist.preload} className="relative text-gray-300 hover:text-red-500 transition hidden lg:block" to="/wishlist">
                               <FaHeart className="w-5 h-5" />
                               {wishlistItems.length > 0 && (
                                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-600 rounded-full text-[10px] text-white flex items-center justify-center">
@@ -141,7 +166,7 @@ const Header = () => {
                          </NavLink>
 
                          {/* Cart */}
-                         <NavLink className="relative text-gray-300 hover:text-cyan-400 transition hidden lg:block" to="/cart">
+                         <NavLink onMouseEnter={Cart.preload} className="relative text-gray-300 hover:text-cyan-400 transition hidden lg:block" to="/cart">
                               <FaShoppingCart className="w-5 h-5" />
                               {cart.length > 0 && (
                                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-cyan-600 rounded-full text-[10px] text-white flex items-center justify-center">
@@ -171,6 +196,7 @@ const Header = () => {
                                              to="/LoginAndSignup"
                                              className="block px-4 py-2 text-cyan-400 hover:bg-slate-700"
                                              onClick={() => setIsUserOpen(false)}
+                                             onMouseEnter={LoginAndSignup.preload}
                                         >
                                              Login / Signup
                                         </NavLink>
@@ -185,6 +211,7 @@ const Header = () => {
                                                   to="/profile"
                                                   className="block px-4 py-2 text-gray-300 hover:bg-slate-700"
                                                   onClick={() => setIsUserOpen(false)}
+                                                  onMouseEnter={Profile.preload}
                                              >
                                                   Profile
                                              </NavLink>
@@ -228,15 +255,15 @@ const Header = () => {
                               <div className="absolute top-full  text-black  p-4 flex flex-col gap-2  animate-slideIn lg:hidden  right-0 mt-3 w-40 bg-slate-800 border border-slate-700 
                                    rounded-xl shadow-xl transition-all duration-300 origin-top">
                                    <NavLink to="/" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Home</NavLink>
-                                   <NavLink to="/blog" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Blog</NavLink>
-                                   <NavLink to="/info" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Info</NavLink>
-                                   <NavLink to="/shop/mobiles" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Mobile</NavLink>
-                                   <NavLink to="/shop/laptops" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500" >Laptops</NavLink>
-                                   <NavLink to="/shop/gadgets" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Gadgets</NavLink>
-                                   <NavLink to="/shop/books" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Books</NavLink>
-                                   <NavLink to="/shop/t-shirts" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">T-Shirts</NavLink>
-                                   <NavLink to="/cart" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Cart</NavLink>
-                                   <NavLink to="/wishlist" onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Wishlist</NavLink>
+                                   <NavLink to="/blog" onMouseEnter={Blog.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Blog</NavLink>
+                                   <NavLink to="/info" onMouseEnter={Info.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Info</NavLink>
+                                   <NavLink to="/shop/mobiles" onMouseEnter={Mobile.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Mobile</NavLink>
+                                   <NavLink to="/shop/laptops" onMouseEnter={Laptop.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500" >Laptops</NavLink>
+                                   <NavLink to="/shop/gadgets" onMouseEnter={Gadgets.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Gadgets</NavLink>
+                                   <NavLink to="/shop/books" onMouseEnter={Books.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Books</NavLink>
+                                   <NavLink to="/shop/t-shirts" onMouseEnter={TShirts.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">T-Shirts</NavLink>
+                                   <NavLink to="/cart" onMouseEnter={Cart.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Cart</NavLink>
+                                   <NavLink to="/wishlist" onMouseEnter={Wishlist.preload} onClick={() => setIsMenuOpen(false)} className="text-gray-300 hover:bg-blue-500">Wishlist</NavLink>
                               </div>
                          )}
                     </div>

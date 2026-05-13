@@ -1,10 +1,10 @@
-import { StrictMode, Suspense, lazy } from "react";
+import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Critical imports - loaded immediately
-import Layout from "./MainComponents/Layout.jsx";
+import Layout from "./MainComponents/layout.jsx";
 import App from "./App.jsx";
 import AnimateOnScroll from "./Components/AnimateOnScroll";
 import { adminProtectKey } from "./constants/adminRoute";
@@ -16,23 +16,25 @@ import { StockProvider } from "./context/StockContext";
 import { AuthProvider } from "./context/AuthContext";
 
 // Lazy loaded route components - code split into separate chunks
-const Mobile = lazy(() => import("./MainComponents/Mobile"));
-const Laptop = lazy(() => import("./MainComponents/laptop.jsx"));
-const Gadgets = lazy(() => import("./MainComponents/gadgets.jsx"));
-const Books = lazy(() => import("./MainComponents/Book.jsx"));
-const TShirts = lazy(() => import("./MainComponents/t-shirts.jsx"));
-const Wishlist = lazy(() => import("./MainComponents/wishlist"));
-const Blog = lazy(() => import("./MainComponents/blog.jsx"));
-const LoginAndSignup = lazy(() => import("./MainComponents/LoginAndSignup.jsx"));
-const Info = lazy(() => import("./MainComponents/Info.jsx"));
-const Profile = lazy(() => import("./MainComponents/Profile.jsx"));
-const OrderTracking = lazy(() => import("./MainComponents/OrderTracking.jsx"));
-const Cart = lazy(() => import("./MainComponents/cart.jsx"));
-const AdminDashboard = lazy(() => import("./MainComponents/admin.jsx"));
-const BreakingNewsPage = lazy(() => import("./MainComponents/News/NewsPage.jsx"));
+import {
+  Mobile,
+  Laptop,
+  Gadgets,
+  Books,
+  TShirts,
+  Wishlist,
+  Blog,
+  LoginAndSignup,
+  Info,
+  Profile,
+  OrderTracking,
+  Cart,
+  AdminDashboard,
+  BreakingNewsPage,
+} from "./routeComponents";
 
 // Loading fallback component
-const PageLoader = () => (
+export const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-[#020617]">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400"></div>
   </div>
