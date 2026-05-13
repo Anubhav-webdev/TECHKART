@@ -5,7 +5,7 @@ import republicdayVideo from "../assets/images/single-image-3.mp4";
 // import IndependencedayVideo from "../assets/images/single-image-4.mp4";
 // import DiwaliVideo from "../assets/images/single-image-5.mp4";
 // import NavratreVideo from "../assets/images/single-image-6.mp4";
-import ChristmasVideo from "../assets/images/single-image-7.mp4";
+import ChristmasVideo from "../assets/images/Single-image-7.mp4";
 
 
 // Data for Tuesdays
