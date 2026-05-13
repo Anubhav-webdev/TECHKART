@@ -112,7 +112,7 @@ const Blog = () => {
 
      useEffect(() => {
           // Fetch posts
-          fetch("http://localhost:7000/api/blogs")
+          fetch("https://techkart-ava8.onrender.com/api/blogs")
                .then((res) => res.json())
                .then((data) => setPosts(data))
                .catch((err) => console.error("Blog fetch error:", err))

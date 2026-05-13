@@ -29,7 +29,7 @@ const About = () => {
 
                     try {
                          // 👉 Fetch Users
-                         const resUsers = await fetch("http://localhost:7000/api/auth/count");
+                         const resUsers = await fetch("https://techkart-ava8.onrender.com/api/auth/count");
                          if (resUsers.ok) {
                               const dataUsers = await resUsers.json();
                               setUserCount(dataUsers.totalUsers);
@@ -38,7 +38,7 @@ const About = () => {
                          }
 
                          // 👉 Fetch Products
-                         const resProducts = await fetch("http://localhost:7000/api/products/count");
+                         const resProducts = await fetch("https://techkart-ava8.onrender.com/api/products/count");
                          if (resProducts.ok) {
                               const dataProducts = await resProducts.json();
                               setProductCount(dataProducts.total);

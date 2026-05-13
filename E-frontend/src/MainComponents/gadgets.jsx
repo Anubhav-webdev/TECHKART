@@ -31,7 +31,7 @@ const Gadgets = () => {
 
      // Fetch Products
      useEffect(() => {
-          fetch("http://localhost:7000/api/products")
+          fetch("https://techkart-ava8.onrender.com/api/products")
                .then((res) => res.json())
                .then((data) => {
                     let filtered = Array.isArray(data) ? data : [];

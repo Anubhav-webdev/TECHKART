@@ -60,12 +60,12 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const usersRes = await fetch("http://localhost:7000/api/auth/all");
+      const usersRes = await fetch("https://techkart-ava8.onrender.com/api/auth/all");
       const usersData = await usersRes.json();
       setUserCount(usersData.length);
       setUsers(usersData);
 
-      const productRes = await fetch("http://localhost:7000/api/products/count");
+      const productRes = await fetch("https://techkart-ava8.onrender.com/api/products/count");
       const productData = await productRes.json();
       setProductCount(productData.total || 0);
     } catch (err) {

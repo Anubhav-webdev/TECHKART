@@ -28,7 +28,7 @@ const TShirts = () => {
 
      // Fetch t-shirts
      useEffect(() => {
-          fetch("http://localhost:7000/api/tshirts/")
+          fetch("https://techkart-ava8.onrender.com/api/tshirts/")
                .then((res) => res.json())
                .then((data) => {
                     const arr = Array.isArray(data) ? data : [];

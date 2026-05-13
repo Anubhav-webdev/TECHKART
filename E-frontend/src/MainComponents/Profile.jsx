@@ -21,7 +21,7 @@ const getAvatarUrl = (avatar) => {
     avatar.startsWith('data:') ||
     avatar.startsWith('blob:')
   ) return avatar;
-  if (avatar.startsWith('/uploads')) return `http://localhost:7000${avatar}`;
+  if (avatar.startsWith('/uploads')) return `https://techkart-ava8.onrender.com${avatar}`;
   return avatar;
 };
 

@@ -49,7 +49,7 @@ const LoginAndSignup = () => {
           setErrors(validation);
           if (Object.keys(validation).length === 0) {
                try {
-                    const res = await fetch("http://localhost:7000/api/auth/login", {
+                    const res = await fetch("https://techkart-ava8.onrender.com/api/auth/login", {
                          method: "POST",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify(loginData)
@@ -72,7 +72,7 @@ const LoginAndSignup = () => {
           setErrors(validation);
           if (Object.keys(validation).length === 0) {
                try {
-                    const res = await fetch("http://localhost:7000/api/auth/signup", {
+                    const res = await fetch("https://techkart-ava8.onrender.com/api/auth/signup", {
                          method: "POST",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({ username: signupData.username, email: signupData.email, phone: signupData.phone, password: signupData.password })

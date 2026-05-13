@@ -30,7 +30,7 @@ const Book = () => {
 
      // Fetch products
      useEffect(() => {
-          fetch("http://localhost:7000/api/books")
+          fetch("https://techkart-ava8.onrender.com/api/books")
                .then((res) => {
                     if (!res.ok)
                          throw new Error(`API error: ${res.status} ${res.statusText}`);
