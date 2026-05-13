@@ -12,7 +12,7 @@ const loadNews = async () => {
   try {
     setLoading(true);
 
-    const response = await axios.get('/api/news', {
+    const response = await axios.get('https://techkart-ava8.onrender.com/api/news', {
       params: {
         q: "smartphone chip price",
         lang: "en",
