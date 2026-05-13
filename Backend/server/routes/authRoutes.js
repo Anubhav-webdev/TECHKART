@@ -82,13 +82,15 @@ if (
 
 
     /* ---------- USER LOGIN ---------- */
+    // Normalize username identifier to match schema normalization (username is lowercase in schema)
     const user = await User.findOne({
       $or: [
-        { username: identifier },
-        { email: identifier },
-        { phone: identifier }
+        { username: id },
+        { email: id },
+        { phone: identifier?.toString().trim() }
       ]
     });
+
 
     if (!user) {
       return res.status(400).json({ message: "User not found" });

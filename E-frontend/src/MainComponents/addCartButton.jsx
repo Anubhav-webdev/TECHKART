@@ -54,10 +54,13 @@ const handleClick = async () => {
     product?.available ??
     0;
 
-  if (stock <= 0) {
+  // If we cannot reliably determine stock on the client, let the backend reserve decide.
+  // This prevents “nothing happens” when stock data is missing/undefined.
+  if (typeof stock === 'number' && stock <= 0) {
     popup(`${productName} is Sold Out!`);
     return;
   }
+
 
   try {
     const result = await addToCart(product);
