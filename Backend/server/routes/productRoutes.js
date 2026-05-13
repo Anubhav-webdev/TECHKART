@@ -1,5 +1,6 @@
+
 import express from "express";
-import { Product } from "../../Schema/productSchema.js";
+import Product from "../../Schema/productSchema.js";
 
 const router = express.Router();
 
@@ -11,6 +12,8 @@ router.get("/", async (req, res) => {
     const products = await Product.find();
     res.json(products);
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({
       message: "Failed to fetch products",
     });
@@ -18,7 +21,7 @@ router.get("/", async (req, res) => {
 });
 
 /* =========================================
-   RESERVE STOCK
+   RESERVE PRODUCT STOCK
 ========================================= */
 router.post("/:id/reserve", async (req, res) => {
   try {
@@ -42,7 +45,7 @@ router.post("/:id/reserve", async (req, res) => {
 
     await product.save();
 
-    res.json({
+    res.status(200).json({
       message: "Stock reserved",
       stock: product.stock,
     });
@@ -57,7 +60,7 @@ router.post("/:id/reserve", async (req, res) => {
 });
 
 /* =========================================
-   RELEASE STOCK
+   RELEASE PRODUCT STOCK
 ========================================= */
 router.post("/:id/release", async (req, res) => {
   try {
@@ -75,7 +78,7 @@ router.post("/:id/release", async (req, res) => {
 
     await product.save();
 
-    res.json({
+    res.status(200).json({
       message: "Stock released",
       stock: product.stock,
     });
@@ -90,3 +93,4 @@ router.post("/:id/release", async (req, res) => {
 });
 
 export default router;
+

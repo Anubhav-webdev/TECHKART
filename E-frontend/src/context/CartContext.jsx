@@ -44,7 +44,15 @@ export const CartProvider = ({ children }) => {
           try {
                const res = await fetch(`/api/users/${uid}/cart`);
                if (!res.ok) return null;
-               const data = await res.json();
+let data;
+
+try {
+   data = await res.json();
+} catch {
+   throw new Error("Invalid JSON response from server");
+}
+
+
                const normalized = (data.cart || []).map(c => ({ ...c.product, quantity: c.quantity }));
                return normalized;
           } catch (err) {
