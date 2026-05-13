@@ -1,0 +1,15 @@
+.active {
+  background-color: #28a745;
+  /* A green background */
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.sticky-element {
+  position: sticky;
+  top: 0;
+  /* The distance from the top it should stick */
+  z-index: 10;
+}

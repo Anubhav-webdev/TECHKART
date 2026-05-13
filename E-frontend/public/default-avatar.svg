@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background -->
+  <rect width="200" height="200" fill="#1f2937"/>
+  
+  <!-- Circle background for avatar -->
+  <circle cx="100" cy="100" r="95" fill="#4f46e5"/>
+  
+  <!-- Head -->
+  <circle cx="100" cy="75" r="35" fill="#e5e7eb"/>
+  
+  <!-- Body -->
+  <ellipse cx="100" cy="140" rx="45" ry="50" fill="#e5e7eb"/>
+</svg>
