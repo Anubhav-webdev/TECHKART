@@ -326,40 +326,6 @@ router.post('/:id/avatar', upload.single('avatar'), async (req, res) => {
 });
 
 // =================================================
-// ================== CART ENDPOINTS ==============
+// ================== EXPORT =======================
 // =================================================
-// These endpoints are required by CartContext (frontend) for JSON cart sync.
-// Without them, frontend fetch(...).then(res=>res.json()) hits a 404 HTML page
-// and throws: Unexpected token '<' ... is not valid JSON.
-router.get('/:id/cart', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('cart');
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    return res.status(200).json({
-      cart: user.cart || [],
-    });
-  } catch (err) {
-    console.error('Get cart error:', err);
-    return res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
-router.put('/:id/cart', async (req, res) => {
-  try {
-    const { cart } = req.body || {};
-
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    if (!Array.isArray(cart)) {
-      return res.status(400).json({ message: 'cart must be an array' });
-    }
-
-    // Expected from frontend: [{ product: <id>, quantity: <number> }]
-    const normalized = cart
-      .filter(Boolean)
-      .map((it) => ({
-        product: it.product || it._id || it.id,
-        quantity: Number(it.quantity) || 0,
-      }))
+export default router;
