@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from './AuthContext';
 import { useStock } from './StockContext';
 
-
 // Create a context for Cart
 const CartContext = createContext();
 
@@ -18,23 +17,19 @@ export const CartProvider = ({ children }) => {
           try {
                const saved = localStorage.getItem("cart");
                return saved ? JSON.parse(saved) : [];
-          } catch (_) {
-               // ignore localStorage parsing failures
+          } catch (e) {
+               console.warn('CartContext: could not parse localStorage cart', e);
                return [];
           }
-
      });
 
      // ⛅ Keep cart saved in localStorage whenever it changes (guarded)
      useEffect(() => {
           try {
                localStorage.setItem("cart", JSON.stringify(cart));
-          } catch {
-               // ignore localStorage write failures
+          } catch (e) {
+               console.warn('CartContext: failed to save cart to localStorage', e);
           }
-
-
-
      }, [cart]);
 
      // Remote cart helpers (no automatic sync). Use these manually when you need to fetch or persist cart on the server.
@@ -44,15 +39,7 @@ export const CartProvider = ({ children }) => {
           try {
                const res = await fetch(`/api/users/${uid}/cart`);
                if (!res.ok) return null;
-let data;
-
-try {
-   data = await res.json();
-} catch {
-   throw new Error("Invalid JSON response from server");
-}
-
-
+               const data = await res.json();
                const normalized = (data.cart || []).map(c => ({ ...c.product, quantity: c.quantity }));
                return normalized;
           } catch (err) {
@@ -66,7 +53,7 @@ try {
           if (!uid) return false;
           try {
                const payload = (cartToSave || cart).map(item => ({ product: item._id, quantity: item.quantity }));
-               const res = await fetch(`${apiBase}/users/${uid}/cart`, {
+               const res = await fetch(`/api/users/${uid}/cart`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cart: payload })
@@ -109,6 +96,9 @@ try {
      // NOTE: Automatic fetching/saving of cart to server was removed to prevent unintended overwrites/duplication of cart items.
      // Use fetchRemoteCart(), saveRemoteCart(uid) or mergeRemoteCart(uid) explicitly when needed.
 
+     // (Previously, cart was automatically saved to server on each change; this behaviour has been removed to avoid unintended duplication.
+     // Use saveRemoteCart(uid) to persist when desired.)
+
      // When user logs out, clear cart from UI and localStorage so checkout data is not visible after logout
      useEffect(() => {
           if (!user) {
@@ -116,13 +106,12 @@ try {
                (async () => {
                     try {
                          await releaseAllFromCart();
-                    } catch {
-                         // ignore release failures on logout
+                    } catch (err) {
+                         console.warn('Failed to release reserved stock on logout', err);
                     }
-
                     try {
                          localStorage.removeItem('cart');
-                    } catch (e) {
+                    } catch (err) {
                          // ignore
                     }
                })();
@@ -133,35 +122,28 @@ try {
      // Reservation helpers (talk to backend)
      // -------------------------
      const { adjustStock, setStock } = useStock();
-     const apiBase = (import.meta.env.VITE_API_URL?.trim() || 'https://techkart-ava8.onrender.com/api').replace(/\/+$/, '');
-
 
      const reserveProduct = async (id, qty = 1) => {
           try {
-               const res = await fetch(`${apiBase}/products/${id}/reserve`, {
+               const res = await fetch(`/api/products/${id}/reserve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quantity: qty })
                });
                const data = await res.json();
-               if (!res.ok) {
-                    // Make sure callers can display the real backend message
-                    const msg = data?.message || data?.error || 'Reserve failed';
-                    throw new Error(msg);
-               }
+               if (!res.ok) throw new Error(data.message || 'Reserve failed');
                if (data && typeof data.stock === 'number') setStock(id, data.stock);
                else adjustStock(id, -qty);
                return { ok: true, stock: data && data.stock };
           } catch (err) {
                console.error('reserveProduct failed', err);
-               return { ok: false, error: err?.message || String(err) };
+               return { ok: false, error: err.message || String(err) };
           }
      };
 
-
      const releaseProduct = async (id, qty = 1) => {
           try {
-               const res = await fetch(`${apiBase}/products/${id}/release`, {
+               const res = await fetch(`/api/products/${id}/release`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quantity: qty })
