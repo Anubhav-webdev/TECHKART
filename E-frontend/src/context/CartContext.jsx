@@ -1,139 +1,481 @@
-// Backend API Base URL
-const RAW_API =
-     import.meta.env.VITE_API_URL?.trim() ||
-     "https://techkart-ava8.onrender.com/api";
+// React imports for context + state management
+import React, {
+     createContext,
+     useContext,
+     useState,
+     useEffect,
+} from "react";
 
-// Auto-fix missing /api
-const API = RAW_API.endsWith("/api")
-     ? RAW_API
-     : `${RAW_API}/api`;
+import { useAuth } from "./AuthContext";
+import { useStock } from "./StockContext";
 
+// ========================================
+// CREATE CONTEXT
+// ========================================
+const CartContext = createContext();
 
-// =========================
-// RESERVE PRODUCT
-// =========================
-const reserveProduct = async (id, qty = 1) => {
-     try {
-          const url = `${API}/products/${id}/reserve`;
+// ========================================
+// CUSTOM HOOK
+// ========================================
+export const useCart = () => useContext(CartContext);
 
-          console.log("Reserve URL:", url);
+// ========================================
+// PROVIDER
+// ========================================
+export const CartProvider = ({ children }) => {
+     const { user } = useAuth();
 
-          const res = await fetch(url, {
-               method: "POST",
-               headers: {
-                    "Content-Type": "application/json",
-               },
-               body: JSON.stringify({
-                    quantity: qty,
-               }),
-          });
+     const { adjustStock, setStock } = useStock();
 
-          const text = await res.text();
+     // ========================================
+     // SAFE API URL
+     // ========================================
+     const RAW_API =
+          import.meta.env.VITE_API_URL?.trim() ||
+          "https://techkart-ava8.onrender.com/api";
 
-          console.log("Reserve Response:", text);
+     const API = RAW_API.endsWith("/api")
+          ? RAW_API
+          : `${RAW_API}/api`;
 
-          let data = {};
-
+     // ========================================
+     // CART STATE
+     // ========================================
+     const [cart, setCart] = useState(() => {
           try {
-               data = text ? JSON.parse(text) : {};
+               const saved = localStorage.getItem("cart");
+
+               return saved ? JSON.parse(saved) : [];
           } catch (err) {
-               console.error("Invalid JSON:", text);
+               console.warn("Cart parse error:", err);
+
+               return [];
+          }
+     });
+
+     // ========================================
+     // SAVE CART
+     // ========================================
+     useEffect(() => {
+          try {
+               localStorage.setItem(
+                    "cart",
+                    JSON.stringify(cart)
+               );
+          } catch (err) {
+               console.warn("Cart save error:", err);
+          }
+     }, [cart]);
+
+     // ========================================
+     // RESERVE PRODUCT
+     // ========================================
+     const reserveProduct = async (id, qty = 1) => {
+          try {
+               const url = `${API}/products/${id}/reserve`;
+
+               console.log("Reserve URL:", url);
+
+               const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                         "Content-Type":
+                              "application/json",
+                    },
+                    body: JSON.stringify({
+                         quantity: qty,
+                    }),
+               });
+
+               const text = await res.text();
+
+               console.log(
+                    "Reserve Response:",
+                    text
+               );
+
+               let data = {};
+
+               try {
+                    data = text
+                         ? JSON.parse(text)
+                         : {};
+               } catch (err) {
+                    console.error(
+                         "Invalid JSON:",
+                         text
+                    );
+
+                    return {
+                         ok: false,
+                         error:
+                              "Server returned invalid response",
+                    };
+               }
+
+               // FAILED RESPONSE
+               if (!res.ok) {
+                    return {
+                         ok: false,
+                         error:
+                              data.message ||
+                              "Reserve failed",
+                    };
+               }
+
+               // UPDATE STOCK
+               if (
+                    typeof data.stock ===
+                    "number"
+               ) {
+                    setStock(id, data.stock);
+               } else {
+                    adjustStock(id, -qty);
+               }
+
+               return {
+                    ok: true,
+                    stock: data.stock,
+               };
+          } catch (err) {
+               console.error(
+                    "reserveProduct failed:",
+                    err
+               );
 
                return {
                     ok: false,
-                    error: "Server returned invalid response",
+                    error:
+                         err.message ||
+                         "Server error",
                };
           }
+     };
 
-          if (!res.ok) {
+     // ========================================
+     // RELEASE PRODUCT
+     // ========================================
+     const releaseProduct = async (id, qty = 1) => {
+          try {
+               const url = `${API}/products/${id}/release`;
+
+               console.log("Release URL:", url);
+
+               const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                         "Content-Type":
+                              "application/json",
+                    },
+                    body: JSON.stringify({
+                         quantity: qty,
+                    }),
+               });
+
+               const text = await res.text();
+
+               console.log(
+                    "Release Response:",
+                    text
+               );
+
+               let data = {};
+
+               try {
+                    data = text
+                         ? JSON.parse(text)
+                         : {};
+               } catch (err) {
+                    console.error(
+                         "Invalid JSON:",
+                         text
+                    );
+
+                    return {
+                         ok: false,
+                         error:
+                              "Server returned invalid response",
+                    };
+               }
+
+               if (!res.ok) {
+                    return {
+                         ok: false,
+                         error:
+                              data.message ||
+                              "Release failed",
+                    };
+               }
+
+               // UPDATE STOCK
+               if (
+                    typeof data.stock ===
+                    "number"
+               ) {
+                    setStock(id, data.stock);
+               } else {
+                    adjustStock(id, qty);
+               }
+
+               return {
+                    ok: true,
+                    stock: data.stock,
+               };
+          } catch (err) {
+               console.error(
+                    "releaseProduct failed:",
+                    err
+               );
+
                return {
                     ok: false,
-                    error: data.message || "Reserve failed",
+                    error:
+                         err.message ||
+                         "Server error",
+               };
+          }
+     };
+
+     // ========================================
+     // ADD TO CART
+     // ========================================
+     const addToCart = async (product) => {
+          if (!product || !product._id) {
+               return {
+                    ok: false,
+                    error: "Invalid product",
                };
           }
 
-          // Update stock
-          if (typeof data.stock === "number") {
-               setStock(id, data.stock);
-          } else {
-               adjustStock(id, -qty);
+          // Reserve stock first
+          const reserve =
+               await reserveProduct(
+                    product._id,
+                    1
+               );
+
+          if (!reserve.ok) {
+               return {
+                    ok: false,
+                    error:
+                         reserve.error ||
+                         "Insufficient stock",
+               };
           }
+
+          // Add product
+          setCart((prev) => {
+               const exists = prev.find(
+                    (item) =>
+                         item._id === product._id
+               );
+
+               if (exists) {
+                    return prev.map((item) =>
+                         item._id ===
+                         product._id
+                              ? {
+                                     ...item,
+                                     quantity:
+                                          item.quantity +
+                                          1,
+                                }
+                              : item
+                    );
+               }
+
+               return [
+                    ...prev,
+                    {
+                         ...product,
+                         quantity: 1,
+                    },
+               ];
+          });
 
           return {
                ok: true,
-               stock: data.stock,
           };
-     } catch (err) {
-          console.error("reserveProduct failed:", err);
+     };
 
-          return {
-               ok: false,
-               error: err.message || "Server error",
-          };
-     }
-};
+     // ========================================
+     // INCREASE QUANTITY
+     // ========================================
+     const addFromCart = async (id) => {
+          const reserve =
+               await reserveProduct(id, 1);
 
-
-// =========================
-// RELEASE PRODUCT
-// =========================
-const releaseProduct = async (id, qty = 1) => {
-     try {
-          const url = `${API}/products/${id}/release`;
-
-          console.log("Release URL:", url);
-
-          const res = await fetch(url, {
-               method: "POST",
-               headers: {
-                    "Content-Type": "application/json",
-               },
-               body: JSON.stringify({
-                    quantity: qty,
-               }),
-          });
-
-          const text = await res.text();
-
-          console.log("Release Response:", text);
-
-          let data = {};
-
-          try {
-               data = text ? JSON.parse(text) : {};
-          } catch (err) {
-               console.error("Invalid JSON:", text);
-
+          if (!reserve.ok) {
                return {
                     ok: false,
-                    error: "Server returned invalid response",
+                    error: reserve.error,
                };
           }
 
-          if (!res.ok) {
-               return {
-                    ok: false,
-                    error: data.message || "Release failed",
-               };
-          }
-
-          // Update stock
-          if (typeof data.stock === "number") {
-               setStock(id, data.stock);
-          } else {
-               adjustStock(id, qty);
-          }
+          setCart((prev) =>
+               prev.map((item) =>
+                    item._id === id
+                         ? {
+                                ...item,
+                                quantity:
+                                     item.quantity + 1,
+                           }
+                         : item
+               )
+          );
 
           return {
                ok: true,
-               stock: data.stock,
           };
-     } catch (err) {
-          console.error("releaseProduct failed:", err);
+     };
+
+     // ========================================
+     // DECREASE QUANTITY
+     // ========================================
+     const removeFromCart = async (id) => {
+          try {
+               await releaseProduct(id, 1);
+          } catch (err) {
+               console.warn(
+                    "Release failed:",
+                    err
+               );
+          }
+
+          setCart((prev) =>
+               prev
+                    .map((item) =>
+                         item._id === id
+                              ? {
+                                     ...item,
+                                     quantity:
+                                          item.quantity -
+                                          1,
+                                }
+                              : item
+                    )
+                    .filter(
+                         (item) =>
+                              item.quantity > 0
+                    )
+          );
 
           return {
-               ok: false,
-               error: err.message || "Server error",
+               ok: true,
           };
-     }
+     };
+
+     // ========================================
+     // REMOVE COMPLETE PRODUCT
+     // ========================================
+     const allClearFromCart = async (
+          id
+     ) => {
+          const item = cart.find(
+               (i) => i._id === id
+          );
+
+          if (item) {
+               await releaseProduct(
+                    id,
+                    item.quantity || 0
+               );
+          }
+
+          setCart((prev) =>
+               prev.filter(
+                    (item) => item._id !== id
+               )
+          );
+
+          return {
+               ok: true,
+          };
+     };
+
+     // ========================================
+     // CLEAR CART
+     // ========================================
+     const clearCart = () => {
+          setCart([]);
+     };
+
+     // ========================================
+     // RELEASE ALL
+     // ========================================
+     const releaseAllFromCart =
+          async () => {
+               const items = [...cart];
+
+               for (const item of items) {
+                    if (!item?._id)
+                         continue;
+
+                    const qty =
+                         item.quantity || 0;
+
+                    if (qty > 0) {
+                         await releaseProduct(
+                              item._id,
+                              qty
+                         );
+                    }
+               }
+
+               setCart([]);
+          };
+
+     // ========================================
+     // CLEAR ON LOGOUT
+     // ========================================
+     useEffect(() => {
+          if (!user) {
+               (async () => {
+                    try {
+                         await releaseAllFromCart();
+                    } catch (err) {
+                         console.warn(
+                              "Release all failed:",
+                              err
+                         );
+                    }
+
+                    localStorage.removeItem(
+                         "cart"
+                    );
+               })();
+          }
+     }, [user]);
+
+     // ========================================
+     // TOTAL PRICE
+     // ========================================
+     const total = cart.reduce(
+          (acc, item) =>
+               acc +
+               item.price * item.quantity,
+          0
+     );
+
+     // ========================================
+     // PROVIDER
+     // ========================================
+     return (
+          <CartContext.Provider
+               value={{
+                    cart,
+                    total,
+                    addToCart,
+                    addFromCart,
+                    removeFromCart,
+                    allClearFromCart,
+                    clearCart,
+                    reserveProduct,
+                    releaseProduct,
+                    releaseAllFromCart,
+               }}
+          >
+               {children}
+          </CartContext.Provider>
+     );
 };
