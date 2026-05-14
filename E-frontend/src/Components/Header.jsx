@@ -4,7 +4,6 @@ import logo from "../assets/images/logo.png";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { adminProtectKey } from "../constants/adminRoute";
 import {
   Mobile,
   Laptop,
@@ -218,7 +217,7 @@ const Header = () => {
 
                                              {user.role === "admin" && (
                                                   <NavLink
-                                                       to={`/${adminProtectKey}/admin`}
+                                                       to="/admin"
                                                        className="block px-4 py-2 text-gray-300 hover:bg-slate-700"
                                                        onClick={() => setIsUserOpen(false)}
                                                   >
