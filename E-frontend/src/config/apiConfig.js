@@ -1,23 +1,26 @@
 // API Configuration
 // Ensures consistent backend URL across the application
 
+const normalizeApiUrl = (url) => {
+  if (!url) return url;
+  let normalized = url.trim().replace(/\/+$, "");
+  if (!/\/api($|\/)/i.test(normalized)) {
+    normalized += "/api";
+  }
+  return normalized;
+};
+
 const getBackendURL = () => {
-  // Priority: Environment variable > Backend check > Fallback
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  const envUrl = import.meta.env.VITE_API_URL?.trim();
+  if (envUrl) {
+    return normalizeApiUrl(envUrl);
   }
 
-  // For Vercel frontend, use the backend on Render
   if (typeof window !== 'undefined') {
     const isDevelopment = import.meta.env.DEV;
-    
-    if (isDevelopment) {
-      // Development: use proxy or localhost
-      return 'http://localhost:7000/api';
-    } else {
-      // Production: use Render backend
-      return 'https://techkart-ava8.onrender.com/api';
-    }
+    return isDevelopment
+      ? 'http://localhost:7000/api'
+      : 'https://techkart-ava8.onrender.com/api';
   }
 
   return 'https://techkart-ava8.onrender.com/api';

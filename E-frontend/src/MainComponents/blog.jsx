@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_BASE_URL } from "../config/apiConfig";
 
 // --- Shared Styles ---
 const glassCard = "bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-xl";

@@ -9,14 +9,13 @@ import {
 } from "react-icons/fi";
 
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../config/apiConfig";
 
 // ======================================================
 // API BASE URL
 // ======================================================
 
-const API =
-  import.meta.env.VITE_API_URL ||
-  "https://techkart-ava8.onrender.com/api";
+const API = API_BASE_URL;
 
 // ======================================================
 // EMAIL MASK
