@@ -92,7 +92,7 @@ export const StockProvider = ({ children }) => {
           url = `${API}/products?ids=${query}`;
         }
 
-        console.log("Fetching Stocks:", url);
+       
 
         const res = await fetch(url);
 
@@ -112,7 +112,7 @@ export const StockProvider = ({ children }) => {
         // Safe text parsing
         const text = await res.text();
 
-        console.log("Stock Response:", text);
+        
 
         let data = [];
 
