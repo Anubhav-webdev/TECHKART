@@ -3,7 +3,7 @@
 
 const normalizeApiUrl = (url) => {
   if (!url) return url;
-  let normalized = url.trim().replace(/\/+$, "");
+  let normalized = url.trim().replace(/\/+$/, "");
   if (!/\/api($|\/)/i.test(normalized)) {
     normalized += "/api";
   }
