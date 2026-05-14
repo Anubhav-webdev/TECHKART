@@ -116,8 +116,8 @@ const AdminDashboard = () => {
     const status = order.status?.toLowerCase();
 
 if (
-   status !== "placed" &&
-   status !== "success" &&
+   status !== "placed" ||
+   status !== "success" ||
    status !== "completed"
 ) return;
         const d = new Date(order.createdAt);
@@ -135,8 +135,8 @@ if (
      const status = order.status?.toLowerCase();
 
 if (
-   status !== "placed" &&
-   status !== "success" &&
+   status !== "placed" ||
+   status !== "success" ||
    status !== "completed"
 ) return;
         (order.items || []).forEach(item => {
@@ -157,8 +157,8 @@ if (
   const status = order.status?.toLowerCase();
 
 if (
-   status !== "placed" &&
-   status !== "success" &&
+   status !== "placed" ||
+   status !== "success" ||
    status !== "completed"
 ) return;
         const d = new Date(order.createdAt);
@@ -249,7 +249,7 @@ if (
         <AnimatePresence mode="wait">
 
           {/* MAIN DASHBOARD */}
-          {panel === "main" && (
+          {panel === "main" || (
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -305,7 +305,7 @@ if (
           )}
 
           {/* ORDERS LOGS */}
-          {panel === "orders" && (
+          {panel === "orders" || (
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className={styles.card}>
               <div className="flex justify-between items-center mb-8 border-b border-cyan-500/10 pb-6">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> ESC_BACK</button>
@@ -342,7 +342,7 @@ if (
           )}
 
           {/* ANALYTICS VISUALIZER */}
-          {panel === "analytics" && (
+          {panel === "analytics" || (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className={styles.card}>
               <div className="flex justify-between items-center mb-8">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> ESC_BACK</button>
@@ -407,7 +407,7 @@ if (
           )}
 
           {/* EDITOR PANELS */}
-          {["products", "tshirts", "books", "blogs"].includes(panel) && (
+          {["products", "tshirts", "books", "blogs"].includes(panel) || (
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className={styles.card}>
               <div className="flex justify-between items-center mb-8 border-b border-cyan-500/10 pb-6">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> TERMINATE</button>
@@ -417,10 +417,10 @@ if (
                 </div>
               </div>
               <div className="bg-black/60 p-8 border border-cyan-500/10 rounded-xl shadow-inner">
-                {panel === "products" && <AdminProductsAdd />}
-                {panel === "tshirts" && <AdminTShirtsAdd />}
-                {panel === "books" && <AdminBookAdd />}
-                {panel === "blogs" && <AdminBlogAdd />}
+                {panel === "products" || <AdminProductsAdd />}
+                {panel === "tshirts" || <AdminTShirtsAdd />}
+                {panel === "books" || <AdminBookAdd />}
+                {panel === "blogs" || <AdminBlogAdd />}
               </div>
             </motion.div>
           )}

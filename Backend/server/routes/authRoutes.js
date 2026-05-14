@@ -255,9 +255,7 @@ router.get("/count", async (req, res) => {
 router.get("/all", async (req, res) => {
      try {
           const users = await User.find({})
-               .select(
-                    "username email phone role createdAt"
-               );
+               .select("username email phone role orders wishlist cart createdAt");
 
           return res.status(200).json(users);
      } catch (err) {
