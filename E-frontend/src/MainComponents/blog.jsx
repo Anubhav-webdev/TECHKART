@@ -166,7 +166,7 @@ const Blog = () => {
 
      useEffect(() => {
           // --- Replace with your real API ---
-          fetch("https://techkart-ava8.onrender.com/api/blogs")
+          fetch(`${API_BASE_URL}/blogs`)
                .then((res) => res.json())
                .then((data) => setPosts(data))
                .catch((err) => console.error("Blog fetch error:", err))

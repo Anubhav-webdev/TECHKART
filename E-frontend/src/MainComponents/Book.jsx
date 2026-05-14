@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import AddToCartButton from "../MainComponents/addCartButton";
 import { useStock } from "../context/StockContext";
+import { API_BASE_URL } from "../config/apiConfig";
 
 const Book = () => {
      const [products, setProducts] = useState([]);
@@ -30,7 +31,7 @@ const Book = () => {
 
      // Fetch products
      useEffect(() => {
-          fetch("https://techkart-ava8.onrender.com/api/books")
+          fetch(`${API_BASE_URL}/books`)
                .then((res) => {
                     if (!res.ok)
                          throw new Error(`API error: ${res.status} ${res.statusText}`);

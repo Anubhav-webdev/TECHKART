@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
+import { API_BASE_URL } from "../config/apiConfig";
 
 // --- Shared Styles ---
 const glassCard = "bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-lg";
@@ -112,7 +113,7 @@ const Blog = () => {
 
      useEffect(() => {
           // Fetch posts
-          fetch("https://techkart-ava8.onrender.com/api/blogs")
+          fetch(`${API_BASE_URL}/blogs`)
                .then((res) => res.json())
                .then((data) => setPosts(data))
                .catch((err) => console.error("Blog fetch error:", err))

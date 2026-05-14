@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AddToCartButton from "../MainComponents/addCartButton";
 import { useStock } from "../context/StockContext";
+import { API_BASE_URL } from "../config/apiConfig";
 
 const Laptop = () => {
      const [products, setProducts] = useState([]);
@@ -31,7 +32,7 @@ const Laptop = () => {
 
      // Fetch Products
      useEffect(() => {
-          fetch("https://techkart-ava8.onrender.com/api/products")
+          fetch(`${API_BASE_URL}/products`)
                .then((res) => res.json())
                .then((data) => {
                     let filtered = Array.isArray(data) ? data : [];

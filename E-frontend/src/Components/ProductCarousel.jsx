@@ -9,7 +9,8 @@ import HeartIcon from "./icons/HeartIcon"; // Ensure this path is correct
 import { NavLink } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-import { useStock } from "../context/StockContext"; 
+import { useStock } from "../context/StockContext";
+import { API_BASE_URL } from "../config/apiConfig"; 
 
 // --- Shared Styles ---
 const glassCard = "bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-lg";
@@ -189,7 +190,7 @@ export default function ProductCarousel({ title, category, featured }) {
 
      useEffect(() => {
           // Use relative path so Vite proxy / current origin handles backend during dev and avoids mixed-content issues
-          fetch("https://techkart-ava8.onrender.com/api/products")
+          fetch(`${API_BASE_URL}/products`)
                .then(async (res) => {
                     if (!res.ok) {
                          const text = await res.text().catch(() => null);

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/apiConfig";
 
-const API_URL = "https://techkart-ava8.onrender.com/api/blogs";
+const API_URL = `${API_BASE_URL}/blogs`;
 
 const initialBlogData = {
      image: "",

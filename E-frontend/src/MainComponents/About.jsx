@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { API_BASE_URL } from "../config/apiConfig";
 
 // Custom Animated Counter to replace external dependency
 const AnimatedCounter = ({ to, duration = 3, suffix = "" }) => {
@@ -29,7 +30,7 @@ const About = () => {
 
                     try {
                          // 👉 Fetch Users
-                         const resUsers = await fetch("https://techkart-ava8.onrender.com/api/auth/count");
+                         const resUsers = await fetch(`${API_BASE_URL}/auth/count`);
                          if (resUsers.ok) {
                               const dataUsers = await resUsers.json();
                               setUserCount(dataUsers.totalUsers);
@@ -38,7 +39,7 @@ const About = () => {
                          }
 
                          // 👉 Fetch Products
-                         const resProducts = await fetch("https://techkart-ava8.onrender.com/api/products/count");
+                         const resProducts = await fetch(`${API_BASE_URL}/products/count`);
                          if (resProducts.ok) {
                               const dataProducts = await resProducts.json();
                               setProductCount(dataProducts.total);

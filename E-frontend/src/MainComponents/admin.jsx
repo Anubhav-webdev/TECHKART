@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import CountUp from "react-countup";
+import { API_BASE_URL } from "../config/apiConfig";
 import {
   FaBox, FaTshirt, FaBook, FaNewspaper, FaArrowLeft,
   FaHome, FaSync, FaChartLine, FaShoppingBag, FaGhost, FaShieldAlt
@@ -60,12 +61,12 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const usersRes = await fetch("https://techkart-ava8.onrender.com/api/auth/all");
+      const usersRes = await fetch(`${API_BASE_URL}/auth/all`);
       const usersData = await usersRes.json();
       setUserCount(usersData.length);
       setUsers(usersData);
 
-      const productRes = await fetch("https://techkart-ava8.onrender.com/api/products/count");
+      const productRes = await fetch(`${API_BASE_URL}/products/count`);
       const productData = await productRes.json();
       setProductCount(productData.total || 0);
     } catch (err) {

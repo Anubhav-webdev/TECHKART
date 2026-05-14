@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useStock } from "../context/StockContext";
 import { FiPlus, FiMinus, FiTrash, FiX, FiCheckCircle, FiShoppingBag,FiClipboard } from "react-icons/fi";
 import deliveryBoy from "../assets/images/delivery-boy.mp4";
+import { API_BASE_URL } from "../config/apiConfig";
 
 const COUPON_LIST = {
      NEOPHX10: 0.1,
@@ -95,8 +96,7 @@ const OrderSummary = ({ onCheckout }) => {
 
      const fetchProducts = async () => {
           try {
-               const base = (import.meta.env.VITE_API_URL?.trim() || 'https://techkart-ava8.onrender.com/api').replace(/\/+$/, '');
-               const res = await fetch(`${base}/products`);
+               const res = await fetch(`${API_BASE_URL}/products`);
                if (!res.ok) {
                     const txt = await res.text().catch(() => null);
                     throw new Error(`Failed to fetch products: ${res.status} ${txt ? '- ' + txt.slice(0,200) : ''}`);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../config/apiConfig";
 
 const FormInput = ({ label, id, value, onChange, ...props }) => (
      <div>
@@ -101,7 +102,7 @@ const BillingForm = ({ onFormUpdate }) => {
           if (!validate()) return;
 
           try {
-               const res = await fetch("https://techkart-ava8.onrender.com/api/billing/add", {
+               const res = await fetch(`${API_BASE_URL}/billing/add`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ ...form, userId: user.id }),
@@ -117,7 +118,7 @@ const BillingForm = ({ onFormUpdate }) => {
                // if user requested, also save this address in the user's profile
                if (form.saveToAddressList) {
                     try {
-                         const addrRes = await fetch(`/api/users/${user.id}/addresses`, {
+                         const addrRes = await fetch(`${API_BASE_URL}/users/${user.id}/addresses`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Package, MapPin, CreditCard, LogOut, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const UserProfile = () => {
   const { user, logout, login } = useAuth();
@@ -30,7 +31,7 @@ const getAvatarUrl = (avatar) => {
   useEffect(() => {
     if (!user || !user.id) return;
     setLoading(true);
-    fetch(`/api/users/${user.id}`)
+    fetch(`${API_BASE_URL}/users/${user.id}`)
       .then(res => res.json())
       .then(data => {
         const next = data.user;
@@ -44,10 +45,10 @@ const getAvatarUrl = (avatar) => {
   useEffect(() => {
     if (!user || !user.id) return;
     if (activeTab === 'orders') {
-      fetch(`/api/users/${user.id}/orders`).then(r => r.json()).then(d => setOrders(d.orders || []));
+      fetch(`${API_BASE_URL}/users/${user.id}/orders`).then(r => r.json()).then(d => setOrders(d.orders || []));
     }
     if (activeTab === 'address') {
-      fetch(`/api/users/${user.id}/addresses`).then(r => r.json()).then(d => setAddresses(d.addresses || []));
+      fetch(`${API_BASE_URL}/users/${user.id}/addresses`).then(r => r.json()).then(d => setAddresses(d.addresses || []));
     }
   }, [activeTab, user]);
 
@@ -66,7 +67,7 @@ const getAvatarUrl = (avatar) => {
       birthday: profile.birthday
     };
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
+      const res = await fetch(`${API_BASE_URL}/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -97,7 +98,7 @@ const getAvatarUrl = (avatar) => {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/users/${user.id}/avatar`, { method: 'POST', body: fd });
+      const res = await fetch(`${API_BASE_URL}/users/${user.id}/avatar`, { method: 'POST', body: fd });
       // try to parse json safely
       const data = await res.json().catch(() => null);
       if (!res.ok) return alert((data && data.message) || 'Upload failed');
@@ -129,7 +130,7 @@ const getAvatarUrl = (avatar) => {
     if (!newAddress.label || !newAddress.address) return alert('Please provide a label and address.');
     try {
       setLoading(true);
-      const res = await fetch(`/api/users/${user.id}/addresses`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newAddress) });
+      const res = await fetch(`${API_BASE_URL}/users/${user.id}/addresses`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newAddress) });
       const data = await res.json().catch(() => null);
       if (!res.ok) return alert((data && data.message) || 'Add failed');
       setAddresses(data.addresses || data.user?.addresses || []);
@@ -146,7 +147,7 @@ const getAvatarUrl = (avatar) => {
     if (!user || !user.id) return alert('Please log in to remove an address.');
     try {
       setLoading(true);
-      const res = await fetch(`/api/users/${user.id}/addresses/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/users/${user.id}/addresses/${id}`, { method: 'DELETE' });
       const data = await res.json().catch(() => null);
       if (!res.ok) return alert((data && data.message) || 'Remove failed');
       setAddresses(data.addresses || data.user?.addresses || []);
