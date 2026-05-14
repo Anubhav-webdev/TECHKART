@@ -21,6 +21,10 @@ const LoginAndSignup = () => {
           const { name, value } = e.target;
           form === "login" ? setLoginData({ ...loginData, [name]: value }) : setSignupData({ ...signupData, [name]: value });
      };
+const API =
+     import.meta.env.VITE_API_URL ||
+     "https://techkart-ava8.onrender.com/api";
+
 
      // -------------------- YOUR VALIDATIONS & HANDLERS (UNCHANGED) --------------------
      const validateLogin = () => {
@@ -49,12 +53,20 @@ const LoginAndSignup = () => {
           setErrors(validation);
           if (Object.keys(validation).length === 0) {
                try {
-                    const res = await fetch("https://techkart-ava8.onrender.com/api/auth/login", {
+                    const res = await fetch(`${API}/auth/login`,  {
                          method: "POST",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify(loginData)
                     });
-                    const data = await res.json();
+                  const text = await res.text();
+
+let data = {};
+
+try {
+     data = text ? JSON.parse(text) : {};
+} catch {
+     return alert("Invalid server response");
+}
                     if (!res.ok) return alert(data.message || "Login failed");
                     const loggedInUser = { id: data.user._id || data.user.id, username: data.user.username, email: data.user.email, phone: data.user.phone, role: data.user.role || "user" };
                     login(loggedInUser);
@@ -72,12 +84,20 @@ const LoginAndSignup = () => {
           setErrors(validation);
           if (Object.keys(validation).length === 0) {
                try {
-                    const res = await fetch("https://techkart-ava8.onrender.com/api/auth/signup", {
+                    const res = await fetch(`${API}/auth/signup`, {
                          method: "POST",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({ username: signupData.username, email: signupData.email, phone: signupData.phone, password: signupData.password })
                     });
-                    const data = await res.json();
+                    const text = await res.text();
+
+let data = {};
+
+try {
+     data = text ? JSON.parse(text) : {};
+} catch {
+     return alert("Invalid server response");
+}
                     if (!res.ok) return alert(data.message || "Signup failed");
                     const newUser = { id: data.user._id || data.user.id, username: data.user.username, email: data.user.email, phone: data.user.phone, role: data.user.role || "user" };
                     login(newUser);
