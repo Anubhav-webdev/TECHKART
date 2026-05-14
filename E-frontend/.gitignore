@@ -22,4 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-E-frontend/src/constants/adminRoute.js
