@@ -1,5 +1,4 @@
 // Admin route protection key (same for routing and login redirect)
-// In prod, consider using a secure environment variable or proper auth guard instead.
-
-const protectKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+// Use an environment variable when available so the route remains consistent across deploys.
+const protectKey = import.meta.env.VITE_ADMIN_KEY?.trim() || "admin-techkart-dashboard-2024";
 export const adminProtectKey = protectKey;
