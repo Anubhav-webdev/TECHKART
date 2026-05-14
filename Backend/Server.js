@@ -9,6 +9,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./connect.js";
 
+// Routes
 import productRoutes from "./server/routes/productRoutes.js";
 import authRoutes from "./server/routes/authRoutes.js";
 import billingRoutes from "./server/routes/billingRoutes.js";
@@ -20,48 +21,69 @@ import newsRoutes from "./server/routes/newsRoutes.js";
 import geocodeRoutes from "./server/routes/geocodeRoutes.js";
 import userRoutes from "./server/routes/userRoutes.js";
 
-
-
-
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 7000;
 
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// ------------------------------------------------------------
+// ⚙️ CORS FIX
+// ------------------------------------------------------------
+app.use(cors({
+     origin: [
+          "http://localhost:5173",
+          "https://techkart-3jzp-j0nl6tvbx-neophoenix.vercel.app"
+     ],
+     methods: ["GET", "POST", "PUT", "DELETE"],
+     credentials: true
+}));
+
+app.options("*", cors());
+
 // ------------------------------------------------------------
 // ⚙️ Middleware
 // ------------------------------------------------------------
-app.use(cors());
 app.use(express.json());
-
-
+app.use(express.urlencoded({ extended: true }));
 
 // ------------------------------------------------------------
-// 🖼 Serve Frontend Assets
+// 🖼 Static Files
 // ------------------------------------------------------------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const productImagesPath = path.resolve(__dirname, "..", "E-frontend", "public", "productImages");
-if (fs.existsSync(productImagesPath)) {
-     app.use("/productImages", express.static(productImagesPath));
+// uploads
+const uploadsPath = path.resolve(__dirname, "uploads");
+
+if (!fs.existsSync(uploadsPath)) {
+     fs.mkdirSync(uploadsPath, { recursive: true });
 }
 
+app.use("/uploads", express.static(uploadsPath));
+
+// assets
 const assetsPath = path.resolve(__dirname, "..", "E-frontend", "src", "assets");
+
 if (fs.existsSync(assetsPath)) {
      app.use("/assets", express.static(assetsPath));
 }
 
-// Serve uploaded files (avatars, etc.)
-const uploadsPath = path.resolve(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
-app.use("/uploads", express.static(uploadsPath));
+// product images
+const productImagesPath = path.resolve(
+     __dirname,
+     "..",
+     "E-frontend",
+     "public",
+     "productImages"
+);
 
+if (fs.existsSync(productImagesPath)) {
+     app.use("/productImages", express.static(productImagesPath));
+}
 
-
-
-// Routes
+// ------------------------------------------------------------
+// 🛣 API Routes
+// ------------------------------------------------------------
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/billing", billingRoutes);
@@ -73,32 +95,65 @@ app.use("/api/news", newsRoutes);
 app.use("/api/geocode", geocodeRoutes);
 app.use("/api/users", userRoutes);
 
+// ------------------------------------------------------------
+// ✅ Health Check Route
+// ------------------------------------------------------------
+app.get("/", (req, res) => {
+     res.status(200).json({
+          success: true,
+          message: "TechKart API Running 🚀"
+     });
+});
 
 // ------------------------------------------------------------
-// 🧠 Database Connection
+// ❌ Route Not Found Handler
+// ------------------------------------------------------------
+app.use((req, res) => {
+     res.status(404).json({
+          success: false,
+          message: `Route not found: ${req.originalUrl}`
+     });
+});
+
+// ------------------------------------------------------------
+// ❌ Global Error Handler
+// ------------------------------------------------------------
+app.use((err, req, res, next) => {
+     console.error("SERVER ERROR:", err);
+
+     res.status(500).json({
+          success: false,
+          message: "Internal server error",
+          error: err.message
+     });
+});
+
+// ------------------------------------------------------------
+// 🧠 Database Connection + Server Start
 // ------------------------------------------------------------
 (async () => {
      try {
-          const ok = await connectDB();
-          if (ok === false) {
-               console.error('❌ Database connection failed (connect.js returned false). Check the logs above.');
-          } else {
-               console.log('✅ Database connected successfully');
-          }
-     } catch (err) {
-          console.error('❌ Database connection attempt threw:', err && (err.stack || err));
-     }
+          await connectDB();
 
-     // ------------------------------------------------------------
-     // 🚀 Start Server
-     // ------------------------------------------------------------
-     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+          console.log("✅ MongoDB Connected");
+
+          app.listen(PORT, () => {
+               console.log(`🚀 Server running on port ${PORT}`);
+          });
+
+     } catch (err) {
+          console.error("❌ Database connection failed");
+          console.error(err);
+     }
 })();
 
-// Global error handlers to aid local debugging
-process.on('uncaughtException', (err) => {
-     console.error('UNCAUGHT EXCEPTION:', err && (err.stack || err));
+// ------------------------------------------------------------
+// 🔥 Debugging Handlers
+// ------------------------------------------------------------
+process.on("uncaughtException", (err) => {
+     console.error("UNCAUGHT EXCEPTION:", err);
 });
-process.on('unhandledRejection', (reason) => {
-     console.error('UNHANDLED REJECTION:', reason && (reason.stack || reason));
+
+process.on("unhandledRejection", (reason) => {
+     console.error("UNHANDLED REJECTION:", reason);
 });
