@@ -32,21 +32,10 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // ------------------------------------------------------------
 // ⚙️ Middleware
 // ------------------------------------------------------------
-app.use(cors({
-     origin: [
-          "http://localhost:5173",
-          "https://techkart-3jzp-j0nl6tvbx-neophoenix.vercel.app"
-     ],
-     credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-     res.json({
-          success: true,
-          message: "Backend running successfully"
-     });
-});
+
 
 // ------------------------------------------------------------
 // 🖼 Serve Frontend Assets
@@ -84,14 +73,6 @@ app.use("/api/news", newsRoutes);
 app.use("/api/geocode", geocodeRoutes);
 app.use("/api/users", userRoutes);
 
-// ------------------------------------------------------------
-// ❌ 404 HANDLER
-// ------------------------------------------------------------
-app.use((req, res) => {
-     res.status(404).json({
-          message: `Route not found: ${req.originalUrl}`
-     });
-});
 
 // ------------------------------------------------------------
 // 🧠 Database Connection
