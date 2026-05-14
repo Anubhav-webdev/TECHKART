@@ -5,7 +5,7 @@ import CountUp from "react-countup";
 import { API_BASE_URL } from "../config/apiConfig";
 import {
   FaBox, FaTshirt, FaBook, FaNewspaper, FaArrowLeft,
-  FaHome, FaSync, FaChartLine, FaShoppingBag, FaGhost, FaTerminal
+  FaHome, FaSync, FaChartLine, FaShoppingBag, FaGhost, FaShieldAlt
 } from "react-icons/fa";
 
 import {
@@ -18,20 +18,24 @@ import AdminTShirtsAdd from "./AdminTshirtsAdd";
 import AdminProductsAdd from "./AdminProductsAdd";
 import AdminBookAdd from "./AdminBookAdd";
 
-// ================= THEMED PALETTE STYLES =================
+// ================= THEMED STYLES =================
 const styles = {
-  // Deep Black background with Teal border
-  card: "bg-black border-2 border-[#008080]/30 shadow-[0_0_20px_rgba(0,128,128,0.05)] p-6 mb-6 relative group overflow-hidden transition-all duration-300 hover:border-[#00ffff]",
-  
-  // Custom Action Buttons using Cyan & Teal
-  actionBtn: "bg-black border border-[#00ffff]/50 text-[#00ffff] hover:bg-[#00ffff] hover:text-black px-4 py-2 text-[10px] font-black tracking-widest uppercase flex items-center gap-2 transition-all duration-300",
+  card: "bg-[#0a0f1a]/80 backdrop-blur-md border border-cyan-500/20 rounded-br-3xl rounded-tl-3xl p-6 shadow-[0_0_30px_rgba(6,182,212,0.05)] relative overflow-hidden mb-6 group transition-all duration-500 hover:border-cyan-500/50",
+  actionBtn: "bg-transparent hover:bg-cyan-500 hover:text-black border border-cyan-500/50 text-cyan-400 px-5 py-2 rounded-none skew-x-[-12deg] transition-all duration-300 font-bold uppercase tracking-widest flex items-center gap-2 text-xs active:scale-95",
+  navCard: "relative cursor-pointer group p-6 border border-slate-800 bg-slate-900/30 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-500 rounded-xl overflow-hidden flex flex-col items-center justify-center text-center",
+  tableHeader: "text-cyan-600 uppercase text-[10px] font-black tracking-[0.2em] py-4 px-4 text-left border-b border-cyan-500/10",
+  tableRow: "border-b border-white/5 hover:bg-cyan-500/5 transition-colors group",
+  td: "py-4 px-4 text-xs font-medium text-slate-300 group-hover:text-white transition-colors",
+};
 
-  // Navigation Hub using the requested colors
-  navCard: "relative cursor-pointer group p-8 border border-white/5 bg-[#0a0a0a] hover:bg-white/5 transition-all duration-500 flex flex-col items-center justify-center gap-4 overflow-hidden",
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
 
-  // Tactical Table
-  tableHeader: "bg-black text-[#00ffff] uppercase text-[10px] font-black tracking-[0.2em] py-4 px-4 text-left border-b-2 border-[#008080]",
-  td: "py-4 px-4 text-[11px] font-mono text-slate-400 border-b border-white/5 group-hover:text-white transition-colors",
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1 }
 };
 
 const AdminDashboard = () => {
@@ -42,190 +46,279 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [chartMode, setChartMode] = useState("daily");
 
+  const validStatuses = ["placed", "success", "completed"];
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [uRes, pRes] = await Promise.all([
+      const [usersRes, productRes] = await Promise.all([
         fetch(`${API_BASE_URL}/auth/all`),
         fetch(`${API_BASE_URL}/products/count`)
       ]);
-      const uData = await uRes.json();
-      const pData = await pRes.json();
-      setUsers(uData);
-      setUserCount(uData.length);
-      setProductCount(pData.total || 0);
+      
+      const usersData = await usersRes.json();
+      const productData = await productRes.json();
+
+      setUsers(usersData);
+      setUserCount(usersData.length);
+      setProductCount(productData.total || 0);
     } catch (err) {
-      console.error("System Override Failed:", err);
+      console.error("Dashboard error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchDashboardData(); }, []);
-
-  const validStatus = ["placed", "success", "completed"];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const analytics = useMemo(() => {
-    let rev = 0, ords = 0, items = 0;
-    users.forEach(u => {
-      (u.orders || []).forEach(o => {
-        ords++;
-        if (validStatus.includes(o.status?.toLowerCase())) {
-          rev += Number(o.total || 0);
-          (o.items || []).forEach(i => items += Number(i.quantity || 0));
+    let totalOrders = 0;
+    let totalRevenue = 0;
+    let totalItemsSold = 0;
+
+    users.forEach(user => {
+      (user.orders || []).forEach(order => {
+        totalOrders++;
+        if (validStatuses.includes(order.status?.toLowerCase())) {
+          totalRevenue += Number(order.total || 0);
+          (order.items || []).forEach(item => {
+            totalItemsSold += Number(item.quantity || 0);
+          });
         }
       });
     });
-    return { rev, ords, items };
+    return { totalOrders, totalRevenue, totalItemsSold };
+  }, [users]);
+
+  const allOrders = useMemo(() =>
+    users.flatMap(u => (u.orders || []).map(o => ({ ...o, username: u.username }))),
+    [users]
+  );
+
+  const revenueData = useMemo(() => {
+    const map = {};
+    users.forEach(user => {
+      (user.orders || []).forEach(order => {
+        if (!validStatuses.includes(order.status?.toLowerCase())) return;
+        
+        const d = new Date(order.createdAt);
+        const key = chartMode === "daily" 
+          ? d.toISOString().slice(0, 10) 
+          : `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+        
+        map[key] = (map[key] || 0) + Number(order.total || 0);
+      });
+    });
+    return Object.entries(map)
+      .map(([date, revenue]) => ({ date, revenue }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [users, chartMode]);
+
+  const productRanking = useMemo(() => {
+    const map = {};
+    users.forEach(user => {
+      (user.orders || []).forEach(order => {
+        if (!validStatuses.includes(order.status?.toLowerCase())) return;
+        (order.items || []).forEach(item => {
+          if (!map[item.product]) map[item.product] = { qty: 0, revenue: 0 };
+          map[item.product].qty += (item.quantity || 0);
+          map[item.product].revenue += (item.quantity || 0) * (item.price || 0);
+        });
+      });
+    });
+    return Object.entries(map)
+      .map(([id, v]) => ({ id, ...v }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [users]);
+
+  const monthlyStats = useMemo(() => {
+    const map = {};
+    users.forEach(user => {
+      (user.orders || []).forEach(order => {
+        if (!validStatuses.includes(order.status?.toLowerCase())) return;
+        const d = new Date(order.createdAt);
+        const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+        if (!map[key]) map[key] = { revenue: 0, orders: 0 };
+        map[key].revenue += Number(order.total || 0);
+        map[key].orders += 1;
+      });
+    });
+
+    const months = Object.values(map);
+    if (months.length === 0) return { highest: 0, lowest: 0, latency: "0 cycles", progress: "0%" };
+
+    const revenues = months.map(m => m.revenue);
+    const highest = Math.max(...revenues);
+    const lowest = Math.min(...revenues);
+    const avg = revenues.reduce((a, b) => a + b, 0) / revenues.length;
+    const progress = avg ? ((highest - lowest) / avg) * 100 : 0;
+
+    return { highest, lowest, latency: `${months.length} cycles`, progress: `${progress.toFixed(1)}%` };
   }, [users]);
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono selection:bg-[#00ffff] selection:text-black">
+    <div className="min-h-screen bg-[#020406] text-slate-300 font-mono selection:bg-cyan-500/30 overflow-x-hidden">
       
-      {/* SCANLINE EFFECT */}
-      <div className="fixed inset-0 pointer-events-none z-[100] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px] opacity-20" />
+      {/* SCANLINE & BACKGROUND */}
+      <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cyan-900/20 rounded-full blur-[120px] animate-pulse" />
+      </div>
 
-      {/* HEADER */}
-      <nav className="sticky top-0 z-[70] bg-black border-b border-[#008080]/50 px-6 py-4 backdrop-blur-md">
+      <header className="sticky top-0 z-[60] bg-[#020406]/90 backdrop-blur-xl border-b border-cyan-500/10 px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <FaTerminal className="text-[#00ffff] text-2xl animate-pulse" />
+          <div className="flex items-center gap-6">
+            <FaShieldAlt className="text-3xl text-cyan-500" />
             <div>
-              <h1 className="text-xl font-black tracking-tighter text-[#00ffff]">NEO_SYSTEM</h1>
-              <div className="h-1 w-full bg-[#008080]/20"><div className="h-full bg-[#00ffff] w-1/3 animate-ping" /></div>
+              <h1 className="text-xl font-black italic tracking-tighter text-white">NEO-PHOENIX<span className="text-cyan-500">.SYS</span></h1>
+              <div className="h-[2px] w-32 bg-slate-800 mt-1 relative overflow-hidden">
+                <motion.div animate={{ x: [-128, 128] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-cyan-500 w-1/2" />
+              </div>
             </div>
           </div>
           <div className="flex gap-4">
             <button onClick={fetchDashboardData} className={styles.actionBtn}>
-              <FaSync className={loading ? "animate-spin" : ""} /> Re_Sync
+              <FaSync className={loading ? "animate-spin" : ""} /> RE_SYNC
             </button>
-            <NavLink to="/" className={styles.actionBtn}>
-              <FaHome /> Exit_Void
-            </NavLink>
+            <NavLink to="/" className={styles.actionBtn}><FaHome /> EXIT_VOID</NavLink>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <main className="max-w-7xl mx-auto p-6 md:p-10">
+      <main className="max-w-7xl mx-auto p-8 relative z-10">
         <AnimatePresence mode="wait">
+          
           {panel === "main" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              
-              {/* METRICS GRID - Using Full Color Palette */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" exit={{ opacity: 0, y: 20 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                 {[
-                  { label: "Revenue", val: analytics.rev, color: "text-[#00ffff]", pre: "₹" }, // Cyan
-                  { label: "Orders", val: analytics.ords, color: "text-[#ff66b2]" },         // Rosepink
-                  { label: "Items", val: analytics.items, color: "text-[#00ff00]" },         // Green
-                  { label: "Stocks", val: productCount, color: "text-[#ff8c00]" },           // Orange
-                  { label: "Nodes", val: userCount, color: "text-[#008080]" }               // Teal
+                  { label: "Revenue", val: analytics.totalRevenue, color: "text-cyan-400", prefix: "₹" },
+                  { label: "Orders", val: analytics.totalOrders, color: "text-purple-400" },
+                  { label: "Sold", val: analytics.totalItemsSold, color: "text-blue-400" },
+                  { label: "Stock", val: productCount, color: "text-emerald-400" },
+                  { label: "Users", val: userCount, color: "text-amber-400" }
                 ].map((stat, i) => (
-                  <div key={i} className="bg-[#0a0a0a] border-l-4 border-current p-5 shadow-lg group">
-                    <p className="text-[10px] font-black uppercase text-slate-500 mb-1">{stat.label}</p>
-                    <h2 className={`text-3xl font-black italic tracking-tighter ${stat.color}`}>
-                      {stat.pre}<CountUp end={stat.val} duration={2} separator="," />
+                  <motion.div key={i} variants={itemVariants} className={styles.card}>
+                    <p className="text-[10px] uppercase tracking-widest text-cyan-600/70 font-bold mb-2">{stat.label}</p>
+                    <h2 className={`text-2xl font-black tracking-tighter ${stat.color}`}>
+                      {stat.prefix}<CountUp end={stat.val} separator="," duration={2} />
                     </h2>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
-              {/* NAV HUB */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {[
-                  { id: "products", icon: <FaBox />, label: "Inventory", color: "#00ffff" },
-                  { id: "tshirts", icon: <FaTshirt />, label: "Apparel", color: "#ff66b2" },
-                  { id: "books", icon: <FaBook />, label: "Library", color: "#00ff00" },
-                  { id: "blogs", icon: <FaNewspaper />, label: "Intel", color: "#ff8c00" },
-                  { id: "orders", icon: <FaShoppingBag />, label: "Logistics", color: "#008080" },
-                  { id: "analytics", icon: <FaChartLine />, label: "Data", color: "#ffffff" },
+                  { id: "products", icon: <FaBox />, label: "Products" },
+                  { id: "tshirts", icon: <FaTshirt />, label: "T-Shirts" },
+                  { id: "books", icon: <FaBook />, label: "Books" },
+                  { id: "blogs", icon: <FaNewspaper />, label: "Blogs" },
+                  { id: "orders", icon: <FaShoppingBag />, label: "Orders" },
+                  { id: "analytics", icon: <FaChartLine />, label: "Analytics" },
                 ].map((item) => (
-                  <motion.div
-                    key={item.id}
-                    whileHover={{ backgroundColor: item.color, color: "#000" }}
-                    onClick={() => setPanel(item.id)}
-                    className={styles.navCard}
-                    style={{ borderBottom: `2px solid ${item.color}` }}
-                  >
-                    <div className="text-2xl mb-2" style={{ color: "inherit" }}>{item.icon}</div>
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">{item.label}</span>
+                  <motion.div key={item.id} variants={itemVariants} whileHover={{ y: -5 }} onClick={() => setPanel(item.id)} className={styles.navCard}>
+                    <div className="text-2xl mb-3 text-cyan-500 group-hover:text-cyan-300 transition-colors">{item.icon}</div>
+                    <p className="text-[10px] font-black tracking-widest uppercase">{item.label}</p>
                   </motion.div>
                 ))}
               </div>
             </motion.div>
           )}
 
-          {/* ANALYTICS PANEL */}
+          {panel === "orders" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+              <div className="flex justify-between items-center mb-6">
+                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
+                <h2 className="text-xs font-black tracking-[0.3em] text-cyan-500 uppercase">Transaction_Logs</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className={styles.tableHeader}>User_ID</th>
+                      <th className={styles.tableHeader}>Credits</th>
+                      <th className={styles.tableHeader}>Status</th>
+                      <th className={styles.tableHeader}>Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allOrders.map((o, idx) => (
+                      <tr key={idx} className={styles.tableRow}>
+                        <td className={styles.td}>{o.username}</td>
+                        <td className={`${styles.td} text-cyan-400 font-bold`}>₹{o.total}</td>
+                        <td className={styles.td}>
+                          <span className={`px-2 py-0.5 text-[10px] font-bold border ${o.status === 'placed' ? 'border-cyan-500/30 text-cyan-400' : 'border-red-500/30 text-red-400'}`}>
+                            {o.status?.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className={styles.td}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
           {panel === "analytics" && (
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={styles.card}>
-              <div className="flex justify-between items-center mb-10">
-                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> Back</button>
-                <div className="flex bg-black border border-[#008080]">
-                  <button onClick={() => setChartMode("daily")} className={`px-4 py-2 text-[10px] ${chartMode === 'daily' ? 'bg-[#00ffff] text-black' : 'text-white'}`}>Daily</button>
-                  <button onClick={() => setChartMode("monthly")} className={`px-4 py-2 text-[10px] ${chartMode === 'monthly' ? 'bg-[#00ffff] text-black' : 'text-white'}`}>Monthly</button>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+              <div className="flex justify-between items-center mb-8">
+                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
+                <div className="flex gap-2 p-1 bg-black/40 border border-white/5 rounded-lg">
+                  {["daily", "monthly"].map(mode => (
+                    <button key={mode} onClick={() => setChartMode(mode)} className={`px-4 py-1 text-[10px] font-bold uppercase transition-all ${chartMode === mode ? 'bg-cyan-500 text-black' : 'text-slate-500'}`}>{mode}</button>
+                  ))}
                 </div>
               </div>
-
-              <div className="h-[350px] w-full mb-10">
-                <ResponsiveContainer>
-                  <AreaChart data={users.flatMap(u => u.orders || [])}>
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueData}>
                     <defs>
                       <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00ffff" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#ff66b2" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                    <XAxis dataKey="createdAt" hide />
-                    <YAxis tick={{fill: '#008080', fontSize: 10}} />
-                    <Tooltip contentStyle={{backgroundColor: '#000', border: '1px solid #00ffff'}} />
-                    <Area type="monotone" dataKey="total" stroke="#00ffff" fillOpacity={1} fill="url(#colorRev)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 10 }} />
+                    <YAxis tick={{ fill: '#64748b', fontSize: 10 }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0a1120', border: '1px solid #06b6d433', borderRadius: '8px' }} />
+                    <Area type="monotone" dataKey="revenue" stroke="#06b6d4" fill="url(#colorRev)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="p-6 border border-[#ff66b2]/20 bg-[#0a0a0a]">
-                  <h3 className="text-[#ff66b2] text-[10px] font-black uppercase mb-4 tracking-widest">System_Alerts</h3>
-                  <div className="flex items-center gap-4 text-xs text-[#00ff00]">
-                    <FaGhost className="animate-bounce" />
-                    <span>Mainframe online. All encryption protocols active.</span>
-                  </div>
+              <div className="grid md:grid-cols-2 gap-8 mt-10 pt-10 border-t border-white/5">
+                <div>
+                  <h3 className="text-cyan-500 text-[10px] font-black mb-4 uppercase tracking-widest">Top Selling Units</h3>
+                  {productRanking.slice(0, 5).map((p, i) => (
+                    <div key={i} className="flex justify-between py-2 border-b border-white/5 text-[11px]">
+                      <span className="text-slate-400 truncate w-40">{p.id}</span>
+                      <span className="text-cyan-400 font-bold">₹{p.revenue.toLocaleString()}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="p-6 border border-[#ff8c00]/20 bg-[#0a0a0a]">
-                  <h3 className="text-[#ff8c00] text-[10px] font-black uppercase mb-4 tracking-widest">Network_Stats</h3>
-                  <div className="w-full bg-white/5 h-2"><div className="bg-[#00ffff] h-full w-[85%]" /></div>
-                  <p className="text-[9px] mt-2 text-slate-500">BANDWIDTH_USAGE: 85%</p>
+                <div className="bg-cyan-500/5 p-6 rounded-xl border border-cyan-500/10 space-y-3">
+                    <p className="text-[10px] flex justify-between"><span>PEAK_REVENUE</span> <span className="text-cyan-400">₹{monthlyStats.highest.toLocaleString()}</span></p>
+                    <p className="text-[10px] flex justify-between"><span>FLOOR_REVENUE</span> <span className="text-cyan-400">₹{monthlyStats.lowest.toLocaleString()}</span></p>
+                    <p className="text-[10px] flex justify-between"><span>GROWTH_RATE</span> <span className="text-cyan-400">{monthlyStats.progress}</span></p>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* SHARED EDITOR VIEW */}
-          {["products", "tshirts", "books", "blogs", "orders"].includes(panel) && (
-            <motion.div initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className={styles.card}>
-              <div className="flex justify-between items-center mb-8 border-b border-[#008080]/30 pb-4">
-                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> Terminate</button>
-                <span className="text-[#ff66b2] font-black text-[10px] tracking-widest uppercase">Uplink::{panel}</span>
+          {["products", "tshirts", "books", "blogs"].includes(panel) && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={styles.card}>
+              <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
+                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> TERMINATE</button>
+                <span className="text-cyan-500 font-black text-[10px] uppercase tracking-widest">UPLINK::{panel}</span>
               </div>
-              <div className="bg-black p-4">
+              <div className="bg-black/40 p-4 rounded-xl">
                 {panel === "products" && <AdminProductsAdd />}
                 {panel === "tshirts" && <AdminTShirtsAdd />}
                 {panel === "books" && <AdminBookAdd />}
                 {panel === "blogs" && <AdminBlogAdd />}
-                {panel === "orders" && (
-                   <div className="text-[#00ff00] text-xs font-mono">
-                     {/* Simplified table for brief view */}
-                     <p>Accessing encrypted transaction logs...</p>
-                     <div className="mt-4 border border-[#00ff00]/20 p-2">
-                       {users.flatMap(u => u.orders || []).slice(0,10).map((o, idx) => (
-                         <div key={idx} className="flex justify-between py-1 border-b border-white/5">
-                           <span>{o._id}</span>
-                           <span className="text-[#ff8c00]">₹{o.total}</span>
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                )}
               </div>
             </motion.div>
           )}
@@ -233,17 +326,10 @@ const AdminDashboard = () => {
         </AnimatePresence>
       </main>
 
-      <footer className="max-w-7xl mx-auto px-8 py-10 flex justify-between items-center text-[9px] text-slate-700 font-bold uppercase tracking-[0.4em]">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-[#00ff00] rounded-full animate-pulse" />
-          <span>Sync_Active</span>
-        </div>
-        <span>© 2026 TechKart_Industrial</span>
-        <div className="flex gap-4">
-          <span className="text-[#ff66b2]">Rose</span>
-          <span className="text-[#00ffff]">Cyan</span>
-          <span className="text-[#ff8c00]">Orange</span>
-        </div>
+      <footer className="max-w-7xl mx-auto px-8 py-8 flex justify-between items-center text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+        <span>System: Neo-Phoenix V3</span>
+        <span className="text-cyan-900 animate-pulse">Connection: Secure</span>
+        <span>&copy; TechKart 2026</span>
       </footer>
     </div>
   );
