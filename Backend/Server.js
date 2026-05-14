@@ -29,17 +29,19 @@ const PORT = process.env.PORT || 7000;
 // ------------------------------------------------------------
 // ⚙️ CORS FIX
 // ------------------------------------------------------------
+// ------------------------------------------------------------
+// ⚙️ Middleware
+// ------------------------------------------------------------
+
 app.use(cors({
-     origin: [
-          "http://localhost:5173",
-          "https://techkart-3jzp-j0nl6tvbx-neophoenix.vercel.app"
-     ],
-     methods: ["GET", "POST", "PUT", "DELETE"],
-     credentials: true
+     origin: true,
+     credentials: true,
+     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-app.options("*", cors());
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // ------------------------------------------------------------
 // ⚙️ Middleware
 // ------------------------------------------------------------
