@@ -59,6 +59,7 @@ const AdminDashboard = () => {
   const [chartMode, setChartMode] = useState("daily");
 
   const fetchDashboardData = async () => {
+    console.log("Fetching dashboard data...");
     try {
       setLoading(true);
       const usersRes = await fetch(`${API_BASE_URL}/auth/all`);
