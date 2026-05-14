@@ -54,15 +54,22 @@ const findItem = async (id) => {
 // ================== PLACE ORDER ===================
 // =================================================
 router.post("/:id/orders", async (req, res) => {
+  console.log(`[ORDERS] POST /users/${req.params.id}/orders`);
+  console.log('[ORDERS] Request body:', req.body);
+  
   const { items, billing, total } = req.body;
 
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
+      console.log('[ORDERS] User not found:', req.params.id);
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log('[ORDERS] User found:', user.username);
+
     if (!Array.isArray(items) || items.length === 0) {
+      console.log('[ORDERS] Invalid items:', items);
       return res.status(400).json({ message: "Order items required" });
     }
 
@@ -104,11 +111,14 @@ router.post("/:id/orders", async (req, res) => {
     }
 
     if (insufficient.length > 0) {
+      console.log('[ORDERS] Insufficient stock:', insufficient);
       return res.status(400).json({
         message: "Insufficient stock",
         details: insufficient,
       });
     }
+
+    console.log('[ORDERS] Creating order with', orderItems.length, 'items');
 
     // -------- Create order --------
     const trackingRef = `ORD-${Math.random()
@@ -130,6 +140,7 @@ router.post("/:id/orders", async (req, res) => {
     await user.save();
 
     const createdOrder = user.orders[user.orders.length - 1];
+    console.log('[ORDERS] Order created:', trackingRef);
 
     // -------- Demo email ref --------
     const emailRef = await sendOrderEmail(
@@ -141,6 +152,7 @@ router.post("/:id/orders", async (req, res) => {
     user.markModified("orders");
     await user.save();
 
+    console.log('[ORDERS] Sending response for order:', trackingRef);
     res.status(201).json({
       message: "Order placed successfully",
       order: createdOrder,

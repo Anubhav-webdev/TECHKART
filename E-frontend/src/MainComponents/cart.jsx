@@ -4,6 +4,7 @@ import { FiPlus, FiMinus, FiTrash } from "react-icons/fi";
 import BillingForm from "./BillingFrom";
 import OrderSummary from "./OrderSummary";
 import PaymentDetails from "./PaymentDetails";
+import { API_BASE_URL } from "../config/apiConfig";
 
 /* --------------------------------------
    Radio Inputs
@@ -59,15 +60,32 @@ export default function CheckoutPage() {
                     total: billingData.total
                };
 
-               const res = await fetch(`/api/users/${loggedInUser.id}/orders`, {
+               const url = `${API_BASE_URL}/users/${loggedInUser.id}/orders`;
+               console.log('Placing order at:', url);
+               console.log('Payload:', payload);
+
+               const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                });
 
-               const data = await res.json();
+               console.log('Response status:', res.status);
+               console.log('Response headers:', res.headers);
+
+               const text = await res.text();
+               console.log('Response text:', text);
+
+               let data = {};
+               try {
+                    data = text ? JSON.parse(text) : {};
+               } catch (parseErr) {
+                    console.error('Failed to parse JSON response:', text, parseErr);
+                    throw new Error(`Invalid server response: ${text.substring(0, 100)}`);
+               }
+
                console.debug("Checkout response:", res.status, data);
-               if (!res.ok) throw new Error(data.message || 'Order failed');
+               if (!res.ok) throw new Error(data.message || `Server error: ${res.status}`);
 
                // Clear cart locally
                clearCart();
@@ -76,7 +94,7 @@ export default function CheckoutPage() {
                return { order: data.order };
           } catch (err) {
                console.error('Checkout error:', err.message || err);
-               alert('Failed to place order. Please try again.');
+               alert(`Order failed: ${err.message}`);
                throw err;
           }
      };
