@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { adminProtectKey } from "../constants/adminRoute";
 import { motion, AnimatePresence } from "framer-motion"; // Import Framer Motion
+import { API_BASE_URL } from "../config/apiConfig";
 
 const LoginAndSignup = () => {
      const [isSignup, setIsSignup] = useState(false);
@@ -21,9 +22,6 @@ const LoginAndSignup = () => {
           const { name, value } = e.target;
           form === "login" ? setLoginData({ ...loginData, [name]: value }) : setSignupData({ ...signupData, [name]: value });
      };
-const API =
-     import.meta.env.VITE_API_URL ||
-     "https://techkart-ava8.onrender.com/api";
 
 
      // -------------------- YOUR VALIDATIONS & HANDLERS (UNCHANGED) --------------------
@@ -53,7 +51,7 @@ const API =
           setErrors(validation);
           if (Object.keys(validation).length === 0) {
                try {
-                    const res = await fetch(`${API}/auth/login`,  {
+                    const res = await fetch(`${API_BASE_URL}/auth/login`,  {
                          method: "POST",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify(loginData)
@@ -84,7 +82,7 @@ try {
           setErrors(validation);
           if (Object.keys(validation).length === 0) {
                try {
-                    const res = await fetch(`${API}/auth/signup`, {
+                    const res = await fetch(`${API_BASE_URL}/auth/signup`, {
                          method: "POST",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({ username: signupData.username, email: signupData.email, phone: signupData.phone, password: signupData.password })
