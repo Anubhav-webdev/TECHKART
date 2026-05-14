@@ -37,7 +37,6 @@ app.use(cors({
           "http://localhost:5173",
           "https://techkart-3jzp-j0nl6tvbx-neophoenix.vercel.app"
      ],
-     methods: ["GET", "POST", "PUT", "DELETE"],
      credentials: true
 }));
 app.use(express.json());
