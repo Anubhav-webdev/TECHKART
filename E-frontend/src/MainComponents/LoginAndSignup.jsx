@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { adminProtectKey } from "../constants/adminRoute";
 import { motion, AnimatePresence } from "framer-motion"; // Import Framer Motion
 import { API_BASE_URL } from "../config/apiConfig";
 
@@ -69,7 +70,7 @@ try {
                     login(loggedInUser);
                     localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
                     alert(`🎉 Welcome Back! ${loggedInUser.username}`);
-                    if (loggedInUser.role === "admin") navigate("/admin");
+                    if (loggedInUser.role === "admin") navigate(`/${adminProtectKey}/admin`); // admin path uses shared protect key
                     else navigate("/");
                } catch (err) { alert("Server error, try again later"); }
           }

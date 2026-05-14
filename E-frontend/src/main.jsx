@@ -73,16 +73,6 @@ createRoot(document.getElementById("root")).render(
 
                 {/* Admin Routes - Lazy loaded with Suspense */}
                 <Route
-                  path="/admin"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <AnimateOnScroll>
-                        <AdminDashboard />
-                      </AnimateOnScroll>
-                    </Suspense>
-                  }
-                />
-                <Route
                   path={`/${adminProtectKey}`}
                   element={<Navigate to={`/${adminProtectKey}/admin`} replace />}
                 />
