@@ -13,6 +13,17 @@ export const WishlistProvider = ({ children }) => {
           return saved ? JSON.parse(saved) : [];
      });
 
+     // ========================================
+     // SAFE API URL
+     // ========================================
+     const RAW_API =
+          import.meta.env.VITE_API_URL?.trim() ||
+          "https://techkart-ava8.onrender.com/api";
+
+     const API = RAW_API.endsWith("/api")
+          ? RAW_API
+          : `${RAW_API}/api`;
+
      // Keep localStorage in sync
      useEffect(() => {
           localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
@@ -24,7 +35,7 @@ export const WishlistProvider = ({ children }) => {
           const fetchWishlist = async () => {
                if (!user || !user.id) return;
                try {
-                    const res = await fetch(`/api/users/${user.id}/wishlist`);
+                    const res = await fetch(`${API}/users/${user.id}/wishlist`);
                     if (!res.ok) return;
                     const data = await res.json();
                     // data.wishlist will be array of product docs
@@ -39,7 +50,7 @@ export const WishlistProvider = ({ children }) => {
                }
           };
           fetchWishlist();
-     }, [user]);
+     }, [user, API]);
 
      // When user logs out, clear wishlist from UI and localStorage so it doesn't persist after logout
      useEffect(() => {
@@ -65,7 +76,7 @@ export const WishlistProvider = ({ children }) => {
           // If logged in, persist to backend
           if (user && user.id) {
                try {
-                    await fetch(`/api/users/${user.id}/wishlist`, {
+                    await fetch(`${API}/users/${user.id}/wishlist`, {
                          method: 'PUT',
                          headers: { 'Content-Type': 'application/json' },
                          body: JSON.stringify({ productId: product._id })
@@ -83,7 +94,7 @@ export const WishlistProvider = ({ children }) => {
 
           if (user && user.id) {
                try {
-                    await fetch(`/api/users/${user.id}/wishlist/${productId}`, {
+                    await fetch(`${API}/users/${user.id}/wishlist/${productId}`, {
                          method: 'DELETE'
                     });
                } catch (err) {

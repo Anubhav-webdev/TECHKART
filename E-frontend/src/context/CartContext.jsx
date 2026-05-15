@@ -263,7 +263,7 @@ export const CartProvider = ({ children }) => {
                };
           }
 
-          // Add product
+          // Add product to local state
           setCart((prev) => {
                const exists = prev.find(
                     (item) =>
@@ -292,6 +292,31 @@ export const CartProvider = ({ children }) => {
                     },
                ];
           });
+
+          // Save to backend if logged in
+          if (user && user.id) {
+               try {
+                    await fetch(
+                         `${API}/users/${user.id}/cart`,
+                         {
+                              method: "PUT",
+                              headers: {
+                                   "Content-Type":
+                                        "application/json",
+                              },
+                              body: JSON.stringify({
+                                   productId: product._id,
+                                   quantity: 1,
+                              }),
+                         }
+                    );
+               } catch (err) {
+                    console.warn(
+                         "Failed to save cart to server:",
+                         err.message
+                    );
+               }
+          }
 
           return {
                ok: true,
@@ -323,6 +348,31 @@ export const CartProvider = ({ children }) => {
                          : item
                )
           );
+
+          // Update on backend if logged in
+          if (user && user.id) {
+               try {
+                    await fetch(
+                         `${API}/users/${user.id}/cart`,
+                         {
+                              method: "PUT",
+                              headers: {
+                                   "Content-Type":
+                                        "application/json",
+                              },
+                              body: JSON.stringify({
+                                   productId: id,
+                                   quantity: 1,
+                              }),
+                         }
+                    );
+               } catch (err) {
+                    console.warn(
+                         "Failed to update cart on server:",
+                         err.message
+                    );
+               }
+          }
 
           return {
                ok: true,
@@ -360,6 +410,21 @@ export const CartProvider = ({ children }) => {
                     )
           );
 
+          // Update on backend if logged in
+          if (user && user.id) {
+               try {
+                    await fetch(
+                         `${API}/users/${user.id}/cart/${id}`,
+                         { method: "DELETE" }
+                    );
+               } catch (err) {
+                    console.warn(
+                         "Failed to update cart on server:",
+                         err.message
+                    );
+               }
+          }
+
           return {
                ok: true,
           };
@@ -387,6 +452,21 @@ export const CartProvider = ({ children }) => {
                     (item) => item._id !== id
                )
           );
+
+          // Remove from backend if logged in
+          if (user && user.id) {
+               try {
+                    await fetch(
+                         `${API}/users/${user.id}/cart/${id}`,
+                         { method: "DELETE" }
+                    );
+               } catch (err) {
+                    console.warn(
+                         "Failed to remove from cart on server:",
+                         err.message
+                    );
+               }
+          }
 
           return {
                ok: true,
@@ -424,6 +504,41 @@ export const CartProvider = ({ children }) => {
 
                setCart([]);
           };
+
+     // ========================================
+     // FETCH CART ON LOGIN
+     // ========================================
+     useEffect(() => {
+          if (user && user.id) {
+               (async () => {
+                    try {
+                         const res = await fetch(
+                              `${API}/users/${user.id}/cart`
+                         );
+                         if (!res.ok) {
+                              console.warn(
+                                   "Failed to fetch cart:",
+                                   res.status
+                              );
+                              return;
+                         }
+                         const data = await res.json();
+                         const cartItems = (data.cart || []).map(
+                              (item) => ({
+                                   ...item.product,
+                                   quantity: item.quantity,
+                              })
+                         );
+                         setCart(cartItems);
+                    } catch (err) {
+                         console.warn(
+                              "Cart fetch error:",
+                              err.message
+                         );
+                    }
+               })();
+          }
+     }, [user, API]);
 
      // ========================================
      // CLEAR ON LOGOUT

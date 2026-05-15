@@ -338,6 +338,127 @@ router.post('/:id/avatar', upload.single('avatar'), async (req, res) => {
 });
 
 // =================================================
+// ================== WISHLIST ENDPOINTS ===========
+// =================================================
+
+// Get user's wishlist
+router.get('/:id/wishlist', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate('wishlist');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.status(200).json({ wishlist: user.wishlist || [] });
+  } catch (err) {
+    console.error('Get wishlist error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Add product to wishlist
+router.put('/:id/wishlist', async (req, res) => {
+  try {
+    const { productId } = req.body;
+    if (!productId) return res.status(400).json({ message: 'Product ID required' });
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Check if product already in wishlist
+    if (!user.wishlist.includes(productId)) {
+      user.wishlist.push(productId);
+      user.markModified('wishlist');
+      await user.save();
+    }
+
+    await user.populate('wishlist');
+    res.status(200).json({ wishlist: user.wishlist });
+  } catch (err) {
+    console.error('Add to wishlist error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Remove product from wishlist
+router.delete('/:id/wishlist/:productId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.wishlist.pull(req.params.productId);
+    user.markModified('wishlist');
+    await user.save();
+
+    await user.populate('wishlist');
+    res.status(200).json({ wishlist: user.wishlist });
+  } catch (err) {
+    console.error('Remove from wishlist error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// =================================================
+// ================== CART ENDPOINTS ===============
+// =================================================
+
+// Get user's cart
+router.get('/:id/cart', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate('cart.product');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.status(200).json({ cart: user.cart || [] });
+  } catch (err) {
+    console.error('Get cart error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Add product to cart
+router.put('/:id/cart', async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+    if (!productId) return res.status(400).json({ message: 'Product ID required' });
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const qty = Number(quantity) || 1;
+    const existingItem = user.cart.find(item => item.product && item.product.toString() === productId);
+
+    if (existingItem) {
+      existingItem.quantity += qty;
+    } else {
+      user.cart.push({ product: productId, quantity: qty });
+    }
+
+    user.markModified('cart');
+    await user.save();
+
+    await user.populate('cart.product');
+    res.status(200).json({ cart: user.cart });
+  } catch (err) {
+    console.error('Add to cart error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Remove product from cart (decrease quantity or remove completely)
+router.delete('/:id/cart/:productId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.cart = user.cart.filter(item => item.product && item.product.toString() !== req.params.productId);
+    user.markModified('cart');
+    await user.save();
+
+    await user.populate('cart.product');
+    res.status(200).json({ cart: user.cart });
+  } catch (err) {
+    console.error('Remove from cart error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// =================================================
 // ================== EXPORT =======================
 // =================================================
 export default router;
