@@ -557,12 +557,15 @@ export const CartProvider = ({ children }) => {
                               return;
                          }
                          const data = await res.json();
-                         const cartItems = (data.cart || []).map(
-                              (item) => ({
-                                   ...item.product,
-                                   quantity: item.quantity,
+                         const cartItems = (data.cart || [])
+                              .map((item) => {
+                                   if (!item?.product) return null;
+                                   return {
+                                        ...item.product,
+                                        quantity: item.quantity,
+                                   };
                               })
-                         );
+                              .filter(Boolean);
                          setCart(cartItems);
                     } catch (err) {
                          console.warn(

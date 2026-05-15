@@ -43,7 +43,7 @@ const CartItem = ({ item, onAdd, onRemove, onDelete, stock }) => (
                     </h3>
                     <p className="text-xs text-gray-400 mt-1">
                          <span className="font-medium text-white">
-                              ₹{item.price.toLocaleString()}
+                              ₹{Number(item.price || 0).toLocaleString()}
                          </span>
                     </p>
                     <p
