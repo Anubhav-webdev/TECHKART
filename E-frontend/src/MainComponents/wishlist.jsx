@@ -89,7 +89,7 @@ const WishlistCard = ({ product, onRemove }) => {
                          {/* Price & Discount */}
                          <div className="mt-4 flex flex-wrap items-center gap-3">
                               <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-500">
-                                   ₹{product.price.toLocaleString("en-IN")}
+                                   ₹{Number(product.price || 0).toLocaleString("en-IN")}
                               </span>
                               {product.discount > 0 && (
                                    <span className="text-xs bg-pink-500/20 text-pink-300 font-bold px-2 py-1 rounded-md border border-pink-500/30">

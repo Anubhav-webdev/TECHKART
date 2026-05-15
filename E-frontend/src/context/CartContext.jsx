@@ -506,12 +506,46 @@ export const CartProvider = ({ children }) => {
           };
 
      // ========================================
-     // FETCH CART ON LOGIN
+     // SYNC LOCAL CART TO SERVER AND FETCH ON LOGIN
      // ========================================
+     const syncLocalCartToServer = async () => {
+          if (!user || !user.id || cart.length === 0) return;
+
+          for (const item of cart) {
+               if (!item?._id) continue;
+
+               try {
+                    await fetch(
+                         `${API}/users/${user.id}/cart`,
+                         {
+                              method: "PUT",
+                              headers: {
+                                   "Content-Type":
+                                        "application/json",
+                              },
+                              body: JSON.stringify({
+                                   productId: item._id,
+                                   quantity:
+                                        item.quantity || 1,
+                              }),
+                         }
+                    );
+               } catch (err) {
+                    console.warn(
+                         "Failed to sync cart item to server:",
+                         item._id,
+                         err.message
+                    );
+               }
+          }
+     };
+
      useEffect(() => {
           if (user && user.id) {
                (async () => {
                     try {
+                         await syncLocalCartToServer();
+
                          const res = await fetch(
                               `${API}/users/${user.id}/cart`
                          );

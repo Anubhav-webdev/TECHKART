@@ -29,12 +29,35 @@ export const WishlistProvider = ({ children }) => {
           localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
      }, [wishlistItems]);
 
+     const syncLocalWishlistToServer = async () => {
+          if (!user || !user.id || wishlistItems.length === 0) return;
+
+          for (const item of wishlistItems) {
+               if (!item?._id) continue;
+
+               try {
+                    await fetch(`${API}/users/${user.id}/wishlist`, {
+                         method: 'PUT',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({ productId: item._id }),
+                    });
+               } catch (err) {
+                    console.error(
+                         'Failed to sync wishlist item to server:',
+                         item._id,
+                         err.message
+                    );
+               }
+          }
+     };
+
      // Helpful debug: surface wishlist-driven stock syncs
      const debugWishlistSync = (ids) => console.debug('Wishlist: syncing stock for items', ids);
      useEffect(() => {
           const fetchWishlist = async () => {
                if (!user || !user.id) return;
                try {
+                    await syncLocalWishlistToServer();
                     const res = await fetch(`${API}/users/${user.id}/wishlist`);
                     if (!res.ok) return;
                     const data = await res.json();
