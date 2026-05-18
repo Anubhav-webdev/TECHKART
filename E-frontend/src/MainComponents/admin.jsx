@@ -5,7 +5,8 @@ import CountUp from "react-countup";
 import { API_BASE_URL } from "../config/apiConfig";
 import {
   FaBox, FaTshirt, FaBook, FaNewspaper, FaArrowLeft,
-  FaHome, FaSync, FaChartLine, FaShoppingBag, FaGhost, FaShieldAlt
+  FaHome, FaSync, FaChartLine, FaShoppingBag, FaGhost, FaShieldAlt,
+  FaCommentDots
 } from "react-icons/fa";
 
 import {
@@ -38,34 +39,41 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 }
 };
 
+const validStatuses = ["placed", "success", "completed"];
+
 const AdminDashboard = () => {
   const [panel, setPanel] = useState("main");
   const [users, setUsers] = useState([]);
   const [productCount, setProductCount] = useState(0);
   const [userCount, setUserCount] = useState(0);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [chartMode, setChartMode] = useState("daily");
-
-  const validStatuses = ["placed", "success", "completed"];
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [usersRes, productRes] = await Promise.all([
+      setFeedbackLoading(true);
+      const [usersRes, productRes, feedbackRes] = await Promise.all([
         fetch(`${API_BASE_URL}/auth/all`),
-        fetch(`${API_BASE_URL}/products/count`)
+        fetch(`${API_BASE_URL}/products/count`),
+        fetch(`${API_BASE_URL}/feedback`)
       ]);
       
       const usersData = await usersRes.json();
       const productData = await productRes.json();
+      const feedbackData = feedbackRes.ok ? await feedbackRes.json() : { feedbacks: [] };
 
       setUsers(usersData);
       setUserCount(usersData.length);
       setProductCount(productData.total || 0);
+      setFeedbacks(feedbackData.feedbacks || []);
     } catch (err) {
       console.error("Dashboard error:", err);
     } finally {
       setLoading(false);
+      setFeedbackLoading(false);
     }
   };
 
@@ -216,6 +224,7 @@ const AdminDashboard = () => {
                   { id: "books", icon: <FaBook />, label: "Books" },
                   { id: "blogs", icon: <FaNewspaper />, label: "Blogs" },
                   { id: "orders", icon: <FaShoppingBag />, label: "Orders" },
+                  { id: "feedback", icon: <FaCommentDots />, label: "Feedback" },
                   { id: "analytics", icon: <FaChartLine />, label: "Analytics" },
                 ].map((item) => (
                   <motion.div key={item.id} variants={itemVariants} whileHover={{ y: -5 }} onClick={() => setPanel(item.id)} className={styles.navCard}>
@@ -256,6 +265,38 @@ const AdminDashboard = () => {
                         <td className={styles.td}>{new Date(o.createdAt).toLocaleDateString()}</td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {panel === "feedback" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+              <div className="flex justify-between items-center mb-6">
+                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
+                <h2 className="text-xs font-black tracking-[0.3em] text-cyan-500 uppercase">FEEDBACK_STREAM</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className={styles.tableHeader}>User</th>
+                      <th className={styles.tableHeader}>Problem</th>
+                      <th className={styles.tableHeader}>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(feedbackLoading ? Array.from({ length: 5 }) : feedbacks).map((item, idx) => {
+                      if (!item) return null;
+                      return (
+                        <tr key={item._id || idx} className={styles.tableRow}>
+                          <td className={styles.td}>{item.username || item.email || "Unknown"}</td>
+                          <td className={styles.td}>{item.problem}</td>
+                          <td className={styles.td}>{new Date(item.createdAt).toLocaleString()}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

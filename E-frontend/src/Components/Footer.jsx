@@ -5,6 +5,8 @@ import {
      FaFacebookF, FaTwitter, FaYoutube, FaPinterest, 
      FaInstagram, FaChevronDown, FaArrowUp 
 } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/apiConfig';
 import logo from '../assets/images/logo.png';
 
 const SocialIcon = ({ Icon, color }) => (
@@ -90,7 +92,11 @@ const FooterSection = ({ title, children, underlineColor }) => {
 };
 
 const Footer = () => {
+     const { user } = useAuth();
      const [showScrollTop, setShowScrollTop] = useState(false);
+     const [feedbackText, setFeedbackText] = useState("");
+     const [feedbackStatus, setFeedbackStatus] = useState({ text: "", type: "" });
+     const [isSending, setIsSending] = useState(false);
 
      useEffect(() => {
           const handleScroll = () => {
@@ -99,6 +105,48 @@ const Footer = () => {
           window.addEventListener('scroll', handleScroll);
           return () => window.removeEventListener('scroll', handleScroll);
      }, []);
+
+     const submitFeedback = async () => {
+          if (!user || !user.id) {
+               setFeedbackStatus({ text: "Please login to submit feedback.", type: "error" });
+               return;
+          }
+
+          if (!feedbackText.trim()) {
+               setFeedbackStatus({ text: "Please describe your problem before submitting.", type: "error" });
+               return;
+          }
+
+          setIsSending(true);
+          setFeedbackStatus({ text: "", type: "" });
+
+          try {
+               const res = await fetch(`${API_BASE_URL}/feedback`, {
+                    method: "POST",
+                    headers: {
+                         "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                         userId: user.id,
+                         problem: feedbackText.trim(),
+                    }),
+               });
+
+               const data = await res.json();
+
+               if (!res.ok) {
+                    setFeedbackStatus({ text: data.message || "Feedback submission failed.", type: "error" });
+               } else {
+                    setFeedbackText("");
+                    setFeedbackStatus({ text: "Feedback sent successfully. Admin will review it soon.", type: "success" });
+               }
+          } catch (err) {
+               console.error("Feedback submit error:", err);
+               setFeedbackStatus({ text: "Unable to send feedback. Please try again later.", type: "error" });
+          } finally {
+               setIsSending(false);
+          }
+     };
 
      const scrollToTop = () => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -157,6 +205,31 @@ const Footer = () => {
                                    <p>Questions? <a href="mailto:NeoPhoenix@TechKart.com" className="block text-cyan-400 font-medium hover:underline">NeoPhoenix@TechKart.com</a></p>
                                    <p>Call us: <a href="tel:+12345678" className="block text-cyan-400 font-medium hover:underline">+1 (234) 567-890</a></p>
                                    <p>Location: <span className="block mt-1 text-xs">123 Tech Avenue, Silicon Valley, CA</span></p>
+                                   <div className="mt-4">
+                                        <label htmlFor="footerFeedback" className="text-xs uppercase tracking-widest text-gray-400">Send Feedback</label>
+                                        <textarea
+                                             id="footerFeedback"
+                                             value={feedbackText}
+                                             onChange={(e) => setFeedbackText(e.target.value)}
+                                             rows={3}
+                                             placeholder="Describe your problem here (max 250 chars)..."
+                                             className="w-full mt-2 rounded-xl border border-white/10 bg-slate-900/90 text-gray-100 p-3 text-sm placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none"
+                                             maxLength={250}
+                                        />
+                                        <button
+                                             type="button"
+                                             onClick={submitFeedback}
+                                             disabled={isSending}
+                                             className="mt-3 w-full rounded-xl bg-cyan-500 text-black font-bold px-4 py-2 hover:bg-cyan-400 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                             {isSending ? "Sending..." : "Submit Feedback"}
+                                        </button>
+                                        {feedbackStatus.text && (
+                                             <p className={`mt-2 text-sm ${feedbackStatus.type === "success" ? "text-emerald-400" : "text-pink-400"}`}>
+                                                  {feedbackStatus.text}
+                                             </p>
+                                        )}
+                                   </div>
                               </div>
                          </FooterSection>
                     </div>

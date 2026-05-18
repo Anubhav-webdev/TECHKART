@@ -20,6 +20,7 @@ import tshirtRoutes from "./server/routes/tshirtRoutes.js";
 import newsRoutes from "./server/routes/newsRoutes.js";
 import geocodeRoutes from "./server/routes/geocodeRoutes.js";
 import userRoutes from "./server/routes/userRoutes.js";
+import feedbackRoutes from "./server/routes/feedbackRoutes.js";
 
 dotenv.config();
 
@@ -96,6 +97,7 @@ app.use("/api/tshirts", tshirtRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/geocode", geocodeRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 // ------------------------------------------------------------
 // ✅ Health Check Route

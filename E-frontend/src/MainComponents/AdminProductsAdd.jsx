@@ -111,6 +111,15 @@ const AdminProductsAdd = () => {
                return;
           }
 
+          // Boolean fields
+          if (name === "featured") {
+               setProductData(prev => ({
+                    ...prev,
+                    [name]: value === "true"
+               }));
+               return;
+          }
+
           // Numbers
           if (["price", "oldPrice", "discount", "stock", "rating"].includes(name)) {
                const parsed = parseFloat(value);
@@ -133,20 +142,65 @@ const AdminProductsAdd = () => {
           setProductData(prev => ({ ...prev, [name]: value }));
      };
 
+     const validateProductData = () => {
+          const errors = [];
+
+          if (!productData.name.trim()) {
+               errors.push("Name is required.");
+          }
+
+          if (!productData.brand.trim()) {
+               errors.push("Brand is required.");
+          }
+
+          if (!productData.description.trim()) {
+               errors.push("Description is required.");
+          }
+
+          if (!productData.image.trim()) {
+               errors.push("Image URL is required.");
+          }
+
+          if (productData.price <= 0 || Number.isNaN(productData.price)) {
+               errors.push("Price must be greater than 0.");
+          }
+
+          if (productData.stock < 0 || Number.isNaN(productData.stock)) {
+               errors.push("Stock cannot be negative.");
+          }
+
+          if (!["mobile", "laptop", "gadget"].includes(productData.category)) {
+               errors.push("Category must be mobile, laptop, or gadget.");
+          }
+
+          return errors;
+     };
+
      // ---------------- ADD / UPDATE ----------------
      const handleSubmit = async (e) => {
           e.preventDefault();
           setLoading(true);
 
+          const validationErrors = validateProductData();
+          if (validationErrors.length > 0) {
+               alert(validationErrors.join("\n"));
+               setLoading(false);
+               return;
+          }
+
           try {
                if (editId) {
-                    await axios.put(`${API_URL}/update/${editId}`, productData);
+                    const res = await axios.put(`${API_URL}/update/${editId}`, productData);
                     alert("Product updated!");
 
                     setProducts(prev =>
-                         prev.map(p => (p._id === editId ? { ...p, ...productData } : p))
+                         prev.map(p => (p._id === editId ? { ...p, ...res.data } : p))
                     );
+               } else {
+                    const res = await axios.post(`${API_URL}/add`, productData);
+                    alert("Product added successfully!");
 
+                    setProducts(prev => [res.data.electronics || res.data, ...prev]);
                }
 
                setProductData(initialProductData);
