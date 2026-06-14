@@ -298,126 +298,117 @@ const TShirts = () => {
                </aside>
 
                {/* Product Section */}
-               <div className="w-full p-3 lg:p-3 flex-1">
-                    {filteredProducts.length === 0 ? (
-                         <p className="text-center text-gray-500 mt-8">No t-shirts found.</p>
-                    ) : (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                              {filteredProducts.map((product) => (
-                                   <article
-                                        key={product._id || product.name}
-                                        className="group bg-cyan-900/10 border border-cyan-900/30 rounded-lg shadow-lg hover:shadow-cyan-900/20 transition-all duration-300 p-4"
-                                   >
-                                        {/* RESPONSIVE LAYOUT: Flex Column on Mobile, Row on Desktop */}
-                                        <div className="flex flex-col items-center sm:flex-row gap-4 sm:gap-6t">
+              <div className="w-full p-3 lg:p-3 flex-1">
+  {filteredProducts.length === 0 ? (
+    <p className="text-center text-gray-500 mt-8">No t-shirts found.</p>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+      {filteredProducts.map((product) => (
+        <article
+          key={product._id || product.name}
+          className="group bg-cyan-900/10 border border-cyan-900/30 rounded-lg shadow-lg hover:shadow-cyan-900/20 transition-all duration-300 p-4"
+        >
+          {/* RESPONSIVE LAYOUT: Flex Column on Mobile, Row on Desktop */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
+            
+            {/* Image */}
+            <div className="w-full sm:w-auto flex justify-center sm:block bg-white rounded p-1 flex-shrink-0">
+              <img
+                src={product.image || product.gallery?.[0] || "/placeholder.jpg"}
+                alt={product.name}
+                className="w-full h-48 sm:w-40 sm:h-40 object-contain rounded-md shadow-inner"
+              />
+            </div>
 
-                                             {/* Image */}
-                                             <div className="w-full sm:w-auto flex justify-center sm:block bg-white rounded p-1">
-                                                  <img
-                                                       src={product.image || product.gallery?.[0] || "/placeholder.jpg"}
-                                                       alt={product.name}
-                                                       className="w-full h-48 sm:w-40 sm:h-40 object-contain rounded-md shadow-inner"
-                                                  />
-                                             </div>
+            {/* Details */}
+            <div className="flex-1 min-w-0 w-full">
+              <h3 className="text-cyan-400 font-bold text-lg hover:underline cursor-pointer truncate">
+                {product.name}
+              </h3>
+              <div className="text-sm text-gray-400">
+                {product.brand}
+                {product.gender ? ` • ${product.gender}` : ""}
+              </div>
 
-                                             {/* Details */}
-                                             <div className="flex-1 min-w-0 w-full">
-                                                  <h3 className="text-cyan-400 font-bold text-lg hover:underline cursor-pointer truncate">
-                                                       {product.name}
-                                                  </h3>
-                                                  <div className="text-sm text-gray-400">
-                                                       {product.brand}
-                                                       {product.gender ? ` • ${product.gender}` : ""}
-                                                  </div>
+              <div className="mt-2 flex items-center gap-3">
+                <span className="inline-flex items-center bg-cyan-700 text-white text-sm font-medium px-2 py-0.5 rounded">
+                  ★ {product.rating ?? 0}
+                </span>
+                <span className="text-gray-400 text-sm">
+                  {(product.reviews && product.reviews.length) || 0} Reviews
+                </span>
+              </div>
 
-                                                  <div className="mt-2 flex items-center gap-3">
-                                                       <span className="inline-flex items-center bg-cyan-700 text-white text-sm font-medium px-2 py-0.5 rounded">
-                                                            &#9733; {product.rating ?? 0}
-                                                       </span>
-                                                       <span className="text-gray-400 text-sm">
-                                                            {(product.reviews && product.reviews.length) || 0} Reviews
-                                                       </span>
-                                                  </div>
+              <p className="mt-3 text-gray-300 text-sm line-clamp-2">
+                {product.description}
+              </p>
 
-                                                  <p className="mt-3 text-gray-300 text-sm line-clamp-2">
-                                                       {product.description}
-                                                  </p>
+              <ul className="mt-3 space-y-2 text-xs">
+                {product.sizeOptions?.length > 0 && (
+                  <li className="flex flex-wrap items-center gap-2 text-teal-300 font-medium bg-teal-900/30 px-2 py-1 rounded-md border border-teal-800/50">
+                    <span className="text-teal-400 font-semibold">🧷 Sizes:</span>
+                    <span className="text-gray-300">{product.sizeOptions.join(", ")}</span>
+                  </li>
+                )}
+                {product.colorOptions?.length > 0 && (
+                  <li className="flex flex-wrap items-center gap-2 text-pink-300 font-medium bg-pink-900/30 px-2 py-1 rounded-md border border-pink-800/50">
+                    <span className="text-pink-400 font-semibold">🎨 Colors:</span>
+                    <span className="text-gray-300">{product.colorOptions.join(", ")}</span>
+                  </li>
+                )}
+                {product.sleeve && (
+                  <li className="flex flex-wrap items-center gap-2 text-purple-300 font-medium bg-purple-900/30 px-2 py-1 rounded-md border border-purple-800/50">
+                    <span className="text-purple-400 font-semibold">👕 Sleeve:</span>
+                    <span className="text-gray-300">{product.sleeve}</span>
+                  </li>
+                )}
+              </ul>
+            </div>
 
-                                                  <ul className="mt-3 space-y-2 text-xs">
-                                                       {product.sizeOptions?.length > 0 && (
-                                                            <li className="flex flex-wrap items-center gap-2 text-teal-300 font-medium bg-teal-900/30 px-2 py-1 rounded-md border border-teal-800/50">
-                                                                 <span className="text-teal-400 font-semibold">
-                                                                      🧷 Sizes:
-                                                                 </span>
-                                                                 <span className="text-gray-300">
-                                                                      {product.sizeOptions.join(", ")}
-                                                                 </span>
-                                                            </li>
-                                                       )}
-                                                       {product.colorOptions?.length > 0 && (
-                                                            <li className="flex flex-wrap items-center gap-2 text-pink-300 font-medium bg-pink-900/30 px-2 py-1 rounded-md border border-pink-800/50">
-                                                                 <span className="text-pink-400 font-semibold">
-                                                                      🎨 Colors:
-                                                                 </span>
-                                                                 <span className="text-gray-300">
-                                                                      {product.colorOptions.join(", ")}
-                                                                 </span>
-                                                            </li>
-                                                       )}
-                                                       {product.sleeve && (
-                                                            <li className="flex flex-wrap items-center gap-2 text-purple-300 font-medium bg-purple-900/30 px-2 py-1 rounded-md border border-purple-800/50">
-                                                                 <span className="text-purple-400 font-semibold">
-                                                                      👕 Sleeve:
-                                                                 </span>
-                                                                 <span className="text-gray-300">{product.sleeve}</span>
-                                                            </li>
-                                                       )}
-                                                  </ul>
-                                             </div>
+            {/* Right Column (Price/Btn) */}
+            {/* Mobile: Row (Price left, Btn right) | Desktop: Column (Price top, Btn bottom) */}
+            <div className="w-full sm:w-44 border-t border-gray-800 sm:border-0 pt-4 sm:pt-0 mt-2 sm:mt-0 flex flex-row sm:flex-col justify-between items-center sm:items-end sm:self-stretch">
+              <div className="text-left sm:text-right">
+                <div className="text-xl font-bold text-white">
+                  ₹{(product.price || 0).toLocaleString()}
+                </div>
+                {product.oldPrice && (
+                  <div className="text-sm text-gray-500 line-through">
+                    ₹{product.oldPrice.toLocaleString()}
+                  </div>
+                )}
+                {product.discount > 0 && (
+                  <div className="text-sm text-green-400 font-medium">
+                    {product.discount}% off
+                  </div>
+                )}
+              </div>
 
-                                             {/* Right Column (Price/Btn) */}
-                                             {/* Mobile: Row (Price left, Btn right) | Desktop: Column (Price top, Btn bottom) */}
-                                             <div className="w-full sm:w-44 border-t border-gray-800 sm:border-0 pt-4 sm:pt-0 mt-2 sm:mt-0 flex flex-row sm:flex-col justify-between items-center sm:items-end self-stretch">
-                                                  <div className="text-left sm:text-right">
-                                                       <div className="text-xl font-bold text-white">
-                                                            ₹{(product.price || 0).toLocaleString()}
-                                                       </div>
-                                                       {product.oldPrice && (
-                                                            <div className="text-sm text-gray-500 line-through">
-                                                                 ₹{product.oldPrice.toLocaleString()}
-                                                            </div>
-                                                       )}
-                                                       {product.discount > 0 && (
-                                                            <div className="text-sm text-green-400 font-medium">
-                                                                 {product.discount}% off
-                                                            </div>
-                                                       )}
-                                                  </div>
+              <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-2">
+                <span className="bg-teal-900/50 text-orange-400 border border-orange-500/30 font-semibold px-2 py-1 rounded text-xs sm:mb-1">
+                  {product.offerTags?.[0] || "Hot Deal"}
+                </span>
 
-                                                  <div className="flex flex-col items-end gap-2">
-                                                       <span className="hidden sm:inline-block bg-teal-900/50 text-orange-400 border border-orange-500/30 font-semibold px-2 py-1 rounded text-xs mb-1">
-                                                            {product.offerTags?.[0] || "Hot Deal"}
-                                                       </span>
+                <div className="text-pink-500 text-xs font-medium">
+                  {(() => {
+                    const ctx = getStock(product._id);
+                    const available = ctx ?? product?.stock ?? product?.quantity ?? product?.qty ?? product?.available ?? 0;
+                    return available > 0 ? `${available} in stock` : "Sold Out";
+                  })()}
+                </div>
 
-                                                       <div className="text-pink-500 text-xs font-medium">
-                                                            {(() => {
-                                                                 const ctx = getStock(product._id);
-                                                                 const available = ctx ?? product?.stock ?? product?.quantity ?? product?.qty ?? product?.available ?? 0;
-                                                                 return available > 0 ? `${available} in stock` : "Sold Out";
-                                                            })()}
-                                                       </div>
+                <div className="hover:scale-105 transition-transform duration-200">
+                  <AddToCartButton product={product} />
+                </div>
+              </div>
+            </div>
 
-                                                       <div className="hover:scale-105 transition-transform duration-200">
-                                                            <AddToCartButton product={product} />
-                                                       </div>
-                                                  </div>
-                                             </div>
-                                        </div>
-                                   </article>
-                              ))}
-                         </div>
-                    )}
-               </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  )}
+</div>
           </div>
      );
 };

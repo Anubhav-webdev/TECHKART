@@ -303,104 +303,102 @@ const Book = () => {
 
                {/* --- Product Section --- */}
                <div className="w-full p-4 lg:p-6 flex-1">
-                    {filteredProducts.length === 0 ? (
-                         <p className="text-center text-gray-500 mt-8">No books found.</p>
-                    ) : (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              {filteredProducts.map((book) => (
-                                   <article
-                                        key={book._id || book.isbn || book.title}
-                                        className="group bg-cyan-900/10 border border-cyan-900/30 rounded-lg shadow-lg hover:shadow-cyan-900/20 transition-all duration-300 p-4"
-                                   >
-                                        <div className="flex gap-4 sm:gap-8 items-start">
-                                             {/* IMAGE */}
-                                             <div className="flex-shrink-0 bg-white rounded-md p-1">
-                                                  <img
-                                                       src={book.image || "/placeholder.jpg"}
-                                                       alt={book.title}
-                                                       className="w-36 h-36 object-contain rounded-md shadow-inner"
-                                                  />
-                                             </div>
+  {filteredProducts.length === 0 ? (
+    <p className="text-center text-gray-500 mt-8">No books found.</p>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {filteredProducts.map((book) => (
+        <article
+          key={book._id || book.isbn || book.title}
+          className="group bg-cyan-900/10 border border-cyan-900/30 rounded-lg shadow-lg hover:shadow-cyan-900/20 transition-all duration-300 p-4"
+        >
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start h-full">
+            
+            {/* IMAGE */}
+            <div className="flex-shrink-0 bg-white rounded-md p-1 mx-auto sm:mx-0">
+              <img
+                src={book.image || "/placeholder.jpg"}
+                alt={book.title}
+                className="w-32 h-32 sm:w-36 sm:h-36 object-contain rounded-md shadow-inner"
+              />
+            </div>
 
-                                             {/* DETAILS */}
-                                             <div className="flex-1 min-w-0">
-                                                  <h3 className="text-cyan-400 font-bold text-lg hover:underline cursor-pointer truncate">
-                                                       {book.title}
-                                                  </h3>
-                                                  <div className="text-sm font-normal text-orange-400">
-                                                       by {book.author}
-                                                  </div>
-                                                  {book.publisher && (
-                                                       <div className="text-sm font-normal text-teal-500 truncate">
-                                                            Publisher: {book.publisher}
-                                                       </div>
-                                                  )}
-                                                  {book.isbn && (
-                                                       <div className="text-sm font-normal text-gray-400 truncate">
-                                                            ISBN: {book.isbn}
-                                                       </div>
-                                                  )}
+            {/* DETAILS */}
+            <div className="flex-1 min-w-0 w-full">
+              <h3 className="text-cyan-400 font-bold text-lg hover:underline cursor-pointer truncate">
+                {book.title}
+              </h3>
+              <div className="text-sm font-normal text-orange-400">
+                by {book.author}
+              </div>
+              {book.publisher && (
+                <div className="text-sm font-normal text-teal-500 truncate">
+                  Publisher: {book.publisher}
+                </div>
+              )}
+              {book.isbn && (
+                <div className="text-sm font-normal text-gray-400 truncate">
+                  ISBN: {book.isbn}
+                </div>
+              )}
 
-                                                  <div className="mt-2 flex items-center gap-3">
-                                                       <span className="inline-flex items-center bg-cyan-700 text-white text-sm font-medium px-2 py-0.5 rounded">
-                                                            &#9733; {book.rating ?? 0}
-                                                       </span>
-                                                       <span className="text-gray-400 text-sm">
-                                                            {(book.reviews && book.reviews.length) || 0} Reviews
-                                                       </span>
-                                                  </div>
+              <div className="mt-2 flex items-center gap-3">
+                <span className="inline-flex items-center bg-cyan-700 text-white text-sm font-medium px-2 py-0.5 rounded">
+                  ★ {book.rating ?? 0}
+                </span>
+                <span className="text-gray-400 text-sm">
+                  {(book.reviews && book.reviews.length) || 0} Reviews
+                </span>
+              </div>
 
-                                                  <p className="mt-3 text-green-300 text-sm line-clamp-3">
-                                                       {book.description}
-                                                  </p>
-                                             </div>
+              <p className="mt-3 text-green-300 text-sm line-clamp-2 sm:line-clamp-3">
+                {book.description}
+              </p>
+            </div>
 
-                                             {/* CART STRUCTURE (Price/Stock/Button) - KEPT SAME */}
-                                             <div className="w-44 flex flex-col items-end justify-between self-stretch">
-                                                  <div className="text-right">
-                                                       <div className="text-xl font-bold text-white">
-                                                            ₹{(book.price || 0).toLocaleString()}
-                                                       </div>
-                                                       {book.oldPrice ? (
-                                                            <div className="text-sm text-gray-500 line-through">
-                                                                 ₹{book.oldPrice.toLocaleString()}
-                                                            </div>
-                                                       ) : null}
-                                                       {book.discount > 0 && (
-                                                            <div className="text-sm text-green-400 font-medium">
-                                                                 {book.discount}% off
-                                                            </div>
-                                                       )}
-                                                  </div>
+            {/* CART STRUCTURE (Price/Stock/Button) */}
+            <div className="w-full sm:w-auto flex sm:flex-col items-end sm:justify-between justify-between sm:self-stretch border-t sm:border-t-0 border-cyan-900/20 pt-3 sm:pt-0 mt-3 sm:mt-0 gap-2">
+              <div className="text-left sm:text-right">
+                <div className="text-xl font-bold text-white">
+                  ₹{(book.price || 0).toLocaleString()}
+                </div>
+                {book.oldPrice ? (
+                  <div className="text-sm text-gray-500 line-through">
+                    ₹{book.oldPrice.toLocaleString()}
+                  </div>
+                ) : null}
+                {book.discount > 0 && (
+                  <div className="text-sm text-green-400 font-medium">
+                    {book.discount}% off
+                  </div>
+                )}
+              </div>
 
-                                                  <div className="mt-4 text-right space-y-2">
-                                                       <span className="inline-block bg-teal-900/50 text-orange-400 border border-orange-500/30 font-semibold px-2 py-1 rounded text-xs">
-                                                            {book.offerTags?.[0] || "Hot Deal"}
-                                                       </span>
+              <div className="flex flex-col items-end gap-2">
+                <span className="inline-block bg-teal-900/50 text-orange-400 border border-orange-500/30 font-semibold px-2 py-1 rounded text-xs balance-none">
+                  {book.offerTags?.[0] || "Hot Deal"}
+                </span>
 
-                                                       <div className="text-pink-500 text-sm font-medium">
-                                                            {
-                                                                 (() => {
-                                                                      const ctx = getStock(book._id);
-                                                                      const available = ctx ?? book?.stock ?? book?.quantity ?? book?.qty ?? book?.available ?? 0;
-                                                                      return available > 0 ? `${available} in stock` : "Sold Out";
-                                                                 })()
-                                                            }
-                                                       </div>
-                                                  </div>
+                <div className="text-pink-500 text-sm font-medium">
+                  {(() => {
+                    const ctx = getStock(book._id);
+                    const available = ctx ?? book?.stock ?? book?.quantity ?? book?.qty ?? book?.available ?? 0;
+                    return available > 0 ? `${available} in stock` : "Sold Out";
+                  })()}
+                </div>
 
-                                                  <div className="mt-4 text-right">
-                                                       <div className="hover:scale-105 transition-transform duration-200">
-                                                            <AddToCartButton product={book} />
-                                                       </div>
-                                                  </div>
-                                             </div>
-                                        </div>
-                                   </article>
-                              ))}
-                         </div>
-                    )}
-               </div>
+                <div className="hover:scale-105 transition-transform duration-200 mt-1">
+                  <AddToCartButton product={book} />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+      ))}
+    </div>
+  )}
+</div>
           </div>
      );
 };
