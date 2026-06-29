@@ -32,7 +32,6 @@ export const API_BASE_URL = getBackendURL();
 export const apiCall = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  console.log('API Call:', url); // For debugging
 
   try {
     const response = await fetch(url, {

@@ -16,6 +16,9 @@ const COUPON_LIST = {
      XMAS25:0.25,
      DIWALI30:0.3,
      CLASSIC10:0.1,
+     TUESDAY20:0.2,
+     URBAN10:0.1,
+     MINIMAL15:0.15
 };
 
 

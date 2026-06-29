@@ -61,8 +61,7 @@ export default function CheckoutPage() {
                };
 
                const url = `${API_BASE_URL}/users/${loggedInUser.id}/orders`;
-               console.log('Placing order at:', url);
-               console.log('Payload:', payload);
+ 
 
                const res = await fetch(url, {
                     method: 'POST',
@@ -70,11 +69,8 @@ export default function CheckoutPage() {
                     body: JSON.stringify(payload)
                });
 
-               console.log('Response status:', res.status);
-               console.log('Response headers:', res.headers);
 
                const text = await res.text();
-               console.log('Response text:', text);
 
                let data = {};
                try {

@@ -74,7 +74,6 @@ export const CartProvider = ({ children }) => {
           try {
                const url = `${API}/products/${id}/reserve`;
 
-               console.log("Reserve URL:", url);
 
                const res = await fetch(url, {
                     method: "POST",
@@ -88,11 +87,6 @@ export const CartProvider = ({ children }) => {
                });
 
                const text = await res.text();
-
-               console.log(
-                    "Reserve Response:",
-                    text
-               );
 
                let data = {};
 
@@ -159,8 +153,6 @@ export const CartProvider = ({ children }) => {
           try {
                const url = `${API}/products/${id}/release`;
 
-               console.log("Release URL:", url);
-
                const res = await fetch(url, {
                     method: "POST",
                     headers: {
@@ -174,10 +166,6 @@ export const CartProvider = ({ children }) => {
 
                const text = await res.text();
 
-               console.log(
-                    "Release Response:",
-                    text
-               );
 
                let data = {};
 
