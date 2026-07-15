@@ -6,7 +6,7 @@ import { API_BASE_URL } from "../config/apiConfig";
 import {
   FaBox, FaTshirt, FaBook, FaNewspaper, FaArrowLeft,
   FaHome, FaSync, FaChartLine, FaShoppingBag, FaGhost, FaShieldAlt,
-  FaCommentDots
+  FaCommentDots, FaUser
 } from "react-icons/fa";
 
 import {
@@ -48,32 +48,40 @@ const AdminDashboard = () => {
   const [userCount, setUserCount] = useState(0);
   const [feedbacks, setFeedbacks] = useState([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [visits, setVisits] = useState([]);
+  const [visitsLoading, setVisitsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [chartMode, setChartMode] = useState("daily");
+  const [selectedUserId, setSelectedUserId] = useState("all");
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setFeedbackLoading(true);
-      const [usersRes, productRes, feedbackRes] = await Promise.all([
+      setVisitsLoading(true);
+      const [usersRes, productRes, feedbackRes, visitsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/auth/all`),
         fetch(`${API_BASE_URL}/products/count`),
-        fetch(`${API_BASE_URL}/feedback`)
+        fetch(`${API_BASE_URL}/feedback`),
+        fetch(`${API_BASE_URL}/visits/history`)
       ]);
       
       const usersData = await usersRes.json();
       const productData = await productRes.json();
       const feedbackData = feedbackRes.ok ? await feedbackRes.json() : { feedbacks: [] };
+      const visitsData = visitsRes.ok ? await visitsRes.json() : { visits: [] };
 
       setUsers(usersData);
       setUserCount(usersData.length);
       setProductCount(productData.total || 0);
       setFeedbacks(feedbackData.feedbacks || []);
+      setVisits(visitsData.visits || []);
     } catch (err) {
       console.error("Dashboard error:", err);
     } finally {
       setLoading(false);
       setFeedbackLoading(false);
+      setVisitsLoading(false);
     }
   };
 
@@ -140,6 +148,15 @@ const AdminDashboard = () => {
       .map(([id, v]) => ({ id, ...v }))
       .sort((a, b) => b.revenue - a.revenue);
   }, [users]);
+
+  const visitUsers = useMemo(() => {
+    return Array.from(new Set(visits.map((visit) => visit.userId).filter(Boolean)));
+  }, [visits]);
+
+  const filteredVisits = useMemo(() => {
+    if (selectedUserId === "all") return visits;
+    return visits.filter((visit) => visit.userId === selectedUserId);
+  }, [selectedUserId, visits]);
 
   const monthlyStats = useMemo(() => {
     const map = {};
@@ -225,6 +242,7 @@ const AdminDashboard = () => {
                   { id: "blogs", icon: <FaNewspaper />, label: "Blogs" },
                   { id: "orders", icon: <FaShoppingBag />, label: "Orders" },
                   { id: "feedback", icon: <FaCommentDots />, label: "Feedback" },
+                  { id: "tracking", icon: <FaUser />, label: "Tracking" },
                   { id: "analytics", icon: <FaChartLine />, label: "Analytics" },
                 ].map((item) => (
                   <motion.div key={item.id} variants={itemVariants} whileHover={{ y: -5 }} onClick={() => setPanel(item.id)} className={styles.navCard}>
@@ -297,6 +315,49 @@ const AdminDashboard = () => {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {panel === "tracking" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-6">
+                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
+                <div className="flex items-center gap-3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-cyan-500">User</label>
+                  <select
+                    value={selectedUserId}
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    className="bg-black/50 border border-cyan-500/20 text-slate-200 px-3 py-2 text-xs rounded"
+                  >
+                    <option value="all">All Users</option>
+                    {visitUsers.map((userId) => (
+                      <option key={userId} value={userId}>{userId}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className={styles.tableHeader}>User</th>
+                      <th className={styles.tableHeader}>Page</th>
+                      <th className={styles.tableHeader}>Location</th>
+                      <th className={styles.tableHeader}>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(visitsLoading ? Array.from({ length: 6 }) : filteredVisits).map((visit, idx) => (
+                      <tr key={visit._id || idx} className={styles.tableRow}>
+                        <td className={styles.td}>{visit.username || visit.userId || "Unknown"}</td>
+                        <td className={styles.td}>{visit.page || "-"}</td>
+                        <td className={styles.td}>{visit.location || "Unknown"}</td>
+                        <td className={styles.td}>{new Date(visit.visitedAt || visit.createdAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
