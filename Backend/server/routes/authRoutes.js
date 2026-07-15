@@ -64,9 +64,18 @@ router.post("/signup", async (req, res) => {
           });
 
           if (exists) {
+               let field = "account";
+
+               if (exists.username === normalizedUsername) {
+                    field = "username";
+               } else if (exists.email === normalizedEmail) {
+                    field = "email";
+               } else if (exists.phone === normalizedPhone) {
+                    field = "phone";
+               }
+
                return res.status(400).json({
-                    message:
-                         "User already exists",
+                    message: `A user with this ${field} already exists`,
                });
           }
 
