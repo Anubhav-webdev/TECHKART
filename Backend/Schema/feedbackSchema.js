@@ -21,6 +21,11 @@ const feedbackSchema = new mongoose.Schema(
       trim: true,
       maxlength: 1000,
     },
+    status: {
+      type: String,
+      enum: ["pending", "reviewed", "resolved"],
+      default: "pending",
+    },
   },
   { timestamps: true }
 );

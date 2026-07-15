@@ -46,54 +46,105 @@ const BillingForm = ({ onFormUpdate }) => {
      });
 
      const [errors, setErrors] = useState({});
+     const [savedAddresses, setSavedAddresses] = useState([]);
+     const [selectedAddressId, setSelectedAddressId] = useState("");
+
+     const validateForm = (formData = form) => {
+          const temp = {};
+          if (!formData.name?.trim()) temp.name = "Name is required";
+          if (!formData.phone?.trim()) temp.phone = "Phone number is required";
+          else if (!/^[0-9]{10}$/.test(formData.phone)) temp.phone = "Enter a valid 10-digit phone";
+          if (!formData.email?.trim()) temp.email = "Email is required";
+          else if (!/^\S+@\S+\.\S+$/.test(formData.email)) temp.email = "Enter a valid email";
+          if (!formData.address?.trim()) temp.address = "Address is required";
+          if (!formData.country?.trim()) temp.country = "Country is required";
+          if (!formData.city?.trim()) temp.city = "City is required";
+          if (!formData.state?.trim()) temp.state = "State is required";
+          if (!formData.zip?.trim()) temp.zip = "ZIP is required";
+
+          return { isValid: Object.keys(temp).length === 0, errors: temp };
+     };
+
+     const syncFormWithParent = (nextForm) => {
+          const validation = validateForm(nextForm);
+          setErrors(validation.errors);
+          if (onFormUpdate) {
+               onFormUpdate({ formData: nextForm, isValid: validation.isValid, errors: validation.errors });
+          }
+          return validation;
+     };
 
      // Prefill user data if logged in
      useEffect(() => {
           if (user) {
-               setForm(prev => ({
-                    ...prev,
-                    name: user.username || "",
-                    email: user.email || "",
-                    phone: user.phone || "",
-               }));
+               setForm(prev => {
+                    const nextForm = {
+                         ...prev,
+                         name: user.username || "",
+                         email: user.email || "",
+                         phone: user.phone || "",
+                    };
+                    syncFormWithParent(nextForm);
+                    return nextForm;
+               });
           }
      }, [user]);
+
+     useEffect(() => {
+          if (!user?.id) return;
+
+          fetch(`${API_BASE_URL}/users/${user.id}/addresses`)
+               .then(res => res.json())
+               .then(data => setSavedAddresses(data.addresses || []))
+               .catch(() => setSavedAddresses([]));
+     }, [user?.id]);
 
      const handleChange = (e) => {
           const { id, value, type, checked } = e.target;
           setForm(prev => {
                const newForm = { ...prev, [id]: type === "checkbox" ? checked : value };
-               if (onFormUpdate) onFormUpdate(newForm);  // send latest state here
+               syncFormWithParent(newForm);
                return newForm;
           });
      };
-
 
      const handleBillingTypeChange = (e) => {
           const billingType = e.target.id;
           setForm(prev => {
                const newForm = { ...prev, billingType };
-               if (onFormUpdate) onFormUpdate(newForm);
+               syncFormWithParent(newForm);
                return newForm;
           });
      };
 
+     const handleAddressSelect = (e) => {
+          const addressId = e.target.value;
+          setSelectedAddressId(addressId);
+
+          if (!addressId) return;
+
+          const selected = savedAddresses.find(item => item._id === addressId);
+          if (!selected) return;
+
+          const nextForm = {
+               ...form,
+               address: selected.address || "",
+               country: selected.country || "",
+               city: selected.city || "",
+               state: selected.state || "",
+               zip: selected.zip || "",
+               phone: selected.phone || form.phone,
+               billingType: selected.billingType === "work" ? "company" : "individual",
+          };
+
+          setForm(nextForm);
+          syncFormWithParent(nextForm);
+     };
 
      const validate = () => {
-          const temp = {};
-          if (!form.name.trim()) temp.name = "Name is required";
-          if (!form.phone.trim()) temp.phone = "Phone number is required";
-          else if (!/^[0-9]{10}$/.test(form.phone)) temp.phone = "Enter a valid 10-digit phone";
-          if (!form.email.trim()) temp.email = "Email is required";
-          else if (!/^\S+@\S+\.\S+$/.test(form.email)) temp.email = "Enter a valid email";
-          if (!form.address.trim()) temp.address = "Address is required";
-          if (!form.country.trim()) temp.country = "Country is required";
-          if (!form.city.trim()) temp.city = "City is required";
-          if (!form.state.trim()) temp.state = "State is required";
-          if (!form.zip.trim()) temp.zip = "ZIP is required";
-
-          setErrors(temp);
-          return Object.keys(temp).length === 0;
+          const result = validateForm();
+          setErrors(result.errors);
+          return result.isValid;
      };
 
      const handleSubmit = async (e) => {
@@ -174,6 +225,26 @@ const BillingForm = ({ onFormUpdate }) => {
                     />
                </div>
 
+               {savedAddresses.length > 0 && (
+                    <div className="mt-4 rounded-lg border border-cyan-500/20 bg-slate-950/50 p-4">
+                         <label htmlFor="saved-address" className="block text-sm font-medium text-cyan-300 mb-2">Use a saved address</label>
+                         <select
+                              id="saved-address"
+                              value={selectedAddressId}
+                              onChange={handleAddressSelect}
+                              className="w-full rounded-md border border-cyan-500/20 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none"
+                         >
+                              <option value="">Use a new address</option>
+                              {savedAddresses.map((address) => (
+                                   <option key={address._id} value={address._id}>
+                                        {address.label || "Saved address"} — {address.address}, {address.city}
+                                   </option>
+                              ))}
+                         </select>
+                         <p className="mt-2 text-[11px] text-slate-400">Choose one of your saved profile addresses to speed up checkout.</p>
+                    </div>
+               )}
+
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-base  ">
                     <FormInput c id="name" label="Name*" placeholder="Enter your name" value={form.name} onChange={handleChange} />
                     {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
@@ -203,6 +274,10 @@ const BillingForm = ({ onFormUpdate }) => {
                <div className="flex items-center mt-4">
                     <input type="checkbox" id="saveToAddressList" checked={form.saveToAddressList} onChange={handleChange} className="h-4 w-4 accent-teal-600" />
                     <label htmlFor="saveToAddressList" className="ml-2 text-sm">Save to address profile</label>
+               </div>
+
+               <div className="mt-4 rounded border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200">
+                    Billing address is required before checkout can be completed.
                </div>
 
                <button type="submit" className="mt-6 w-full bg-cyan-600 text-white py-2 rounded-lg font-semibold hover:bg-cyan-700">

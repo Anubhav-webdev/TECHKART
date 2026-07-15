@@ -45,8 +45,19 @@ const DeliveryOptions = () => (
 
 export default function CheckoutPage() {
      const { cart, clearCart } = useCart();
+     const [billingFormData, setBillingFormData] = useState(null);
+     const [billingFormValid, setBillingFormValid] = useState(false);
+
+     const handleBillingUpdate = ({ formData, isValid }) => {
+          setBillingFormData(formData || null);
+          setBillingFormValid(Boolean(isValid));
+     };
 
      const handleCheckout = async (billingData) => {
+          if (!billingFormValid || !billingFormData?.address?.trim()) {
+               alert("Please complete your billing address before checkout.");
+               throw new Error("Billing address required");
+          }
           const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
           if (!loggedInUser || !loggedInUser.id) {
                alert("Please Login or Signup to continue.");
@@ -105,13 +116,13 @@ export default function CheckoutPage() {
                <div className="h-1 w-24 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full mx-auto mb-8"></div>
                <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-7">
                     <div className="lg:col-span-2 space-y-6">
-                         <BillingForm />
+                         <BillingForm onFormUpdate={handleBillingUpdate} />
                          <DeliveryOptions />
                          <PaymentDetails />
                     </div>
 
                     <div className="lg:col-span-1">
-                         <OrderSummary onCheckout={handleCheckout} />
+                         <OrderSummary onCheckout={handleCheckout} billingReady={billingFormValid} />
                     </div>
                </div>
           </div>
