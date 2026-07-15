@@ -64,46 +64,4 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.patch("/:id/status", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    if (!['pending', 'reviewed', 'resolved'].includes(status)) {
-      return res.status(400).json({ message: "Invalid feedback status" });
-    }
-
-    const updatedFeedback = await Feedback.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
-
-    if (!updatedFeedback) {
-      return res.status(404).json({ message: "Feedback not found" });
-    }
-
-    return res.status(200).json({ message: "Feedback status updated", feedback: updatedFeedback });
-  } catch (err) {
-    console.error("Update feedback status error:", err);
-    return res.status(500).json({ message: "Server error", error: err.message });
-  }
-});
-
-router.delete("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deletedFeedback = await Feedback.findByIdAndDelete(id);
-    if (!deletedFeedback) {
-      return res.status(404).json({ message: "Feedback not found" });
-    }
-
-    return res.status(200).json({ message: "Feedback deleted successfully" });
-  } catch (err) {
-    console.error("Delete feedback error:", err);
-    return res.status(500).json({ message: "Server error", error: err.message });
-  }
-});
-
 export default router;

@@ -94,7 +94,7 @@ const CartItem = ({ item, onAdd, onRemove, onDelete, stock }) => (
 );
 
 // --- Main Component: Order Summary ---
-const OrderSummary = ({ onCheckout, billingReady = true }) => {
+const OrderSummary = ({ onCheckout }) => {
      const { cart, total, addFromCart, removeFromCart, allClearFromCart } = useCart();
 
      const fetchProducts = async () => {
@@ -118,8 +118,10 @@ const OrderSummary = ({ onCheckout, billingReady = true }) => {
      const [showModal, setShowModal] = useState(false);
      const [showVideo, setShowVideo] = useState(false);
      const [placedOrder, setPlacedOrder] = useState(null);
+     const [syncing, setSyncing] = useState(false);
+     const [syncMessage, setSyncMessage] = useState("");
      const { user: authUser } = useAuth();
-     const { getStock, fetchAndSetStocks } = useStock();
+     const { getStock, fetchAndSetStocks, reconcileOrder } = useStock();
 
      // Keep local user for display in billing section in sync with auth
      const [user, setUser] = useState({ username: "", phone: "" });
@@ -166,11 +168,6 @@ const OrderSummary = ({ onCheckout, billingReady = true }) => {
                alert("Please Login or Signup to continue.");
                return;
           }
-          if (!billingReady) {
-               setMessage({ text: "Please complete your billing address before checkout.", type: "error" });
-               setTimeout(() => setMessage({ text: "", type: "" }), 3000);
-               return;
-          }
           setShowModal(true);
      };
 
@@ -201,6 +198,28 @@ const OrderSummary = ({ onCheckout, billingReady = true }) => {
                setShowVideo(false);
           }
      };
+
+     const handleDevSync = async () => {
+          try {
+               setSyncing(true);
+               setSyncMessage('Syncing...');
+               const data = await fetchProducts();
+               if (Array.isArray(data)) {
+                    setSyncMessage(`Synced ${data.length} products`);
+                    console.debug('Dev sync result:', data.length, 'products');
+               } else if (data === null) {
+                    setSyncMessage('Sync failed');
+               } else {
+                    setSyncMessage('Sync completed');
+               }
+          } catch (err) {
+               console.error('Dev sync failed', err);
+               setSyncMessage('Sync failed');
+          } finally {
+               setSyncing(false);
+               setTimeout(() => setSyncMessage(''), 3000);
+          }
+     }; 
 
      // Copy helper: takes the text to copy (trackingRef, emailRef, etc.)
      const handleCopy = async (text) => {
