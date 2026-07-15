@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import CountUp from "react-countup";
 import { API_BASE_URL } from "../config/apiConfig";
 import {
   FaBox, FaTshirt, FaBook, FaNewspaper, FaArrowLeft,
   FaHome, FaSync, FaChartLine, FaShoppingBag, FaGhost, FaShieldAlt,
-  FaCommentDots, FaUser
+  FaCommentDots
 } from "react-icons/fa";
 
 import {
@@ -49,21 +49,30 @@ const AdminDashboard = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [visits, setVisits] = useState([]);
-  const [visitsLoading, setVisitsLoading] = useState(false);
+  const [activityLoading, setActivityLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [chartMode, setChartMode] = useState("daily");
-  const [selectedUserId, setSelectedUserId] = useState("all");
+
+  const formatDuration = (seconds = 0) => {
+    if (!seconds) return "0s";
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs) return `${hrs}h ${mins}m ${secs}s`;
+    if (mins) return `${mins}m ${secs}s`;
+    return `${secs}s`;
+  };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setFeedbackLoading(true);
-      setVisitsLoading(true);
+      setActivityLoading(true);
       const [usersRes, productRes, feedbackRes, visitsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/auth/all`),
         fetch(`${API_BASE_URL}/products/count`),
         fetch(`${API_BASE_URL}/feedback`),
-        fetch(`${API_BASE_URL}/visits/history`)
+        fetch(`${API_BASE_URL}/visits/history?limit=200`)
       ]);
       
       const usersData = await usersRes.json();
@@ -81,7 +90,7 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
       setFeedbackLoading(false);
-      setVisitsLoading(false);
+      setActivityLoading(false);
     }
   };
 
@@ -149,14 +158,54 @@ const AdminDashboard = () => {
       .sort((a, b) => b.revenue - a.revenue);
   }, [users]);
 
-  const visitUsers = useMemo(() => {
-    return Array.from(new Set(visits.map((visit) => visit.userId).filter(Boolean)));
+  const activitySummary = useMemo(() => {
+    const grouped = {};
+
+    visits.forEach((visit) => {
+      const key = visit.userId || "guest";
+      if (!grouped[key]) {
+        grouped[key] = {
+          userId: visit.userId || "guest",
+          username: visit.username || "Guest",
+          totalDurationSeconds: 0,
+          pagesVisited: 0,
+          lastVisit: visit.visitedAt,
+          lastPage: visit.page || "/",
+          location: visit.location || "Unknown",
+          locationSource: visit.locationSource || "unavailable",
+        };
+      }
+
+      grouped[key].totalDurationSeconds += Number(visit.durationSeconds || 0);
+      grouped[key].pagesVisited += 1;
+      if (new Date(visit.visitedAt) > new Date(grouped[key].lastVisit)) {
+        grouped[key].lastVisit = visit.visitedAt;
+        grouped[key].lastPage = visit.page || "/";
+        grouped[key].location = visit.location || "Unknown";
+        grouped[key].locationSource = visit.locationSource || "unavailable";
+      }
+    });
+
+    return Object.values(grouped).sort((a, b) => new Date(b.lastVisit || 0) - new Date(a.lastVisit || 0));
   }, [visits]);
 
-  const filteredVisits = useMemo(() => {
-    if (selectedUserId === "all") return visits;
-    return visits.filter((visit) => visit.userId === selectedUserId);
-  }, [selectedUserId, visits]);
+  const handleDeleteFeedback = async (feedbackId) => {
+    if (!window.confirm("Delete this feedback permanently?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/feedback/${feedbackId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Failed to delete feedback");
+
+      setFeedbacks((prev) => prev.filter((item) => item._id !== feedbackId));
+    } catch (err) {
+      console.error("Delete feedback error:", err);
+      alert(err.message || "Unable to delete feedback");
+    }
+  };
 
   const monthlyStats = useMemo(() => {
     const map = {};
@@ -199,7 +248,7 @@ const AdminDashboard = () => {
             <div>
               <h1 className="text-xl font-black italic tracking-tighter text-white">NEO-PHOENIX<span className="text-cyan-500">.SYS</span></h1>
               <div className="h-[2px] w-32 bg-slate-800 mt-1 relative overflow-hidden">
-                <motion.div animate={{ x: [-128, 128] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-cyan-500 w-1/2" />
+                <Motion.div animate={{ x: [-128, 128] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-cyan-500 w-1/2" />
               </div>
             </div>
           </div>
@@ -216,7 +265,7 @@ const AdminDashboard = () => {
         <AnimatePresence mode="wait">
           
           {panel === "main" && (
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" exit={{ opacity: 0, y: 20 }}>
+            <Motion.div variants={containerVariants} initial="hidden" animate="visible" exit={{ opacity: 0, y: 20 }}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                 {[
                   { label: "Revenue", val: analytics.totalRevenue, color: "text-cyan-400", prefix: "₹" },
@@ -225,16 +274,16 @@ const AdminDashboard = () => {
                   { label: "Stock", val: productCount, color: "text-emerald-400" },
                   { label: "Users", val: userCount, color: "text-amber-400" }
                 ].map((stat, i) => (
-                  <motion.div key={i} variants={itemVariants} className={styles.card}>
+                  <Motion.div key={i} variants={itemVariants} className={styles.card}>
                     <p className="text-[10px] uppercase tracking-widest text-cyan-600/70 font-bold mb-2">{stat.label}</p>
                     <h2 className={`text-2xl font-black tracking-tighter ${stat.color}`}>
                       {stat.prefix}<CountUp end={stat.val} separator="," duration={2} />
                     </h2>
-                  </motion.div>
+                  </Motion.div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
                 {[
                   { id: "products", icon: <FaBox />, label: "Products" },
                   { id: "tshirts", icon: <FaTshirt />, label: "T-Shirts" },
@@ -242,20 +291,20 @@ const AdminDashboard = () => {
                   { id: "blogs", icon: <FaNewspaper />, label: "Blogs" },
                   { id: "orders", icon: <FaShoppingBag />, label: "Orders" },
                   { id: "feedback", icon: <FaCommentDots />, label: "Feedback" },
-                  { id: "tracking", icon: <FaUser />, label: "Tracking" },
+                  { id: "activity", icon: <FaGhost />, label: "Activity" },
                   { id: "analytics", icon: <FaChartLine />, label: "Analytics" },
                 ].map((item) => (
-                  <motion.div key={item.id} variants={itemVariants} whileHover={{ y: -5 }} onClick={() => setPanel(item.id)} className={styles.navCard}>
+                  <Motion.div key={item.id} variants={itemVariants} whileHover={{ y: -5 }} onClick={() => setPanel(item.id)} className={styles.navCard}>
                     <div className="text-2xl mb-3 text-cyan-500 group-hover:text-cyan-300 transition-colors">{item.icon}</div>
                     <p className="text-[10px] font-black tracking-widest uppercase">{item.label}</p>
-                  </motion.div>
+                  </Motion.div>
                 ))}
               </div>
-            </motion.div>
+            </Motion.div>
           )}
 
           {panel === "orders" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+            <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
               <div className="flex justify-between items-center mb-6">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
                 <h2 className="text-xs font-black tracking-[0.3em] text-cyan-500 uppercase">Transaction_Logs</h2>
@@ -286,11 +335,11 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
 
           {panel === "feedback" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+            <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
               <div className="flex justify-between items-center mb-6">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
                 <h2 className="text-xs font-black tracking-[0.3em] text-cyan-500 uppercase">FEEDBACK_STREAM</h2>
@@ -302,6 +351,7 @@ const AdminDashboard = () => {
                       <th className={styles.tableHeader}>User</th>
                       <th className={styles.tableHeader}>Problem</th>
                       <th className={styles.tableHeader}>Date</th>
+                      <th className={styles.tableHeader}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -312,60 +362,65 @@ const AdminDashboard = () => {
                           <td className={styles.td}>{item.username || item.email || "Unknown"}</td>
                           <td className={styles.td}>{item.problem}</td>
                           <td className={styles.td}>{new Date(item.createdAt).toLocaleString()}</td>
+                          <td className={styles.td}>
+                            <button
+                              onClick={() => handleDeleteFeedback(item._id)}
+                              className="rounded border border-red-500/40 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-red-400 transition hover:bg-red-500/10"
+                            >
+                              Delete
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
 
-          {panel === "tracking" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
-              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-6">
+          {panel === "activity" && (
+            <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+              <div className="flex justify-between items-center mb-6">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
-                <div className="flex items-center gap-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-cyan-500">User</label>
-                  <select
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="bg-black/50 border border-cyan-500/20 text-slate-200 px-3 py-2 text-xs rounded"
-                  >
-                    <option value="all">All Users</option>
-                    {visitUsers.map((userId) => (
-                      <option key={userId} value={userId}>{userId}</option>
-                    ))}
-                  </select>
-                </div>
+                <h2 className="text-xs font-black tracking-[0.3em] text-cyan-500 uppercase">USER_ACTIVITY</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr>
                       <th className={styles.tableHeader}>User</th>
-                      <th className={styles.tableHeader}>Page</th>
+                      <th className={styles.tableHeader}>Last visit</th>
+                      <th className={styles.tableHeader}>Time on pages</th>
+                      <th className={styles.tableHeader}>Pages</th>
                       <th className={styles.tableHeader}>Location</th>
-                      <th className={styles.tableHeader}>Time</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(visitsLoading ? Array.from({ length: 6 }) : filteredVisits).map((visit, idx) => (
-                      <tr key={visit._id || idx} className={styles.tableRow}>
-                        <td className={styles.td}>{visit.username || visit.userId || "Unknown"}</td>
-                        <td className={styles.td}>{visit.page || "-"}</td>
-                        <td className={styles.td}>{visit.location || "Unknown"}</td>
-                        <td className={styles.td}>{new Date(visit.visitedAt || visit.createdAt).toLocaleString()}</td>
+                    {(activityLoading ? Array.from({ length: 5 }) : activitySummary).map((item, idx) => (
+                      <tr key={item.userId || idx} className={styles.tableRow}>
+                        <td className={styles.td}>{item.username || item.userId || "Guest"}</td>
+                        <td className={styles.td}>{item.lastVisit ? new Date(item.lastVisit).toLocaleString() : "—"}</td>
+                        <td className={styles.td}>{formatDuration(item.totalDurationSeconds)}</td>
+                        <td className={styles.td}>{item.pagesVisited}</td>
+                        <td className={styles.td}>
+                          <div className="flex flex-col gap-1">
+                            <span>{item.location || "Unknown"}</span>
+                            <span className="text-[10px] uppercase tracking-widest text-cyan-400">
+                              {item.locationSource === "ipapi" ? "IP tracked" : item.locationSource === "provided" ? "Provided" : "Unavailable"}
+                            </span>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
 
           {panel === "analytics" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
+            <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
               <div className="flex justify-between items-center mb-8">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
                 <div className="flex gap-2 p-1 bg-black/40 border border-white/5 rounded-lg">
@@ -407,11 +462,11 @@ const AdminDashboard = () => {
                     <p className="text-[10px] flex justify-between"><span>GROWTH_RATE</span> <span className="text-cyan-400">{monthlyStats.progress}</span></p>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
 
           {["products", "tshirts", "books", "blogs"].includes(panel) && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={styles.card}>
+            <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={styles.card}>
               <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
                 <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> TERMINATE</button>
                 <span className="text-cyan-500 font-black text-[10px] uppercase tracking-widest">UPLINK::{panel}</span>
@@ -422,7 +477,7 @@ const AdminDashboard = () => {
                 {panel === "books" && <AdminBookAdd />}
                 {panel === "blogs" && <AdminBlogAdd />}
               </div>
-            </motion.div>
+            </Motion.div>
           )}
 
         </AnimatePresence>

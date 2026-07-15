@@ -42,11 +42,13 @@ router.post("/track", async (req, res) => {
                userId,
                username,
                page,
+               pageTitle,
                location,
                city,
                country,
                ipAddress,
                userAgent,
+               durationSeconds,
           } = req.body;
 
           const normalizedUserId = String(userId || "").trim();
@@ -60,14 +62,19 @@ router.post("/track", async (req, res) => {
 
           const clientIp = ipAddress || getClientIp(req);
           const resolvedLocation = location ? null : await resolveLocationFromIp(clientIp);
+          const locationSource = location ? "provided" : resolvedLocation ? "ipapi" : "unavailable";
+          const normalizedDuration = Math.max(0, Number(durationSeconds) || 0);
 
           const visit = await Visit.create({
                userId: normalizedUserId,
                username: username || "",
                page: page || "/",
+               pageTitle: pageTitle || "",
+               durationSeconds: normalizedDuration,
                location: location || resolvedLocation?.location || "Unknown",
                city: city || resolvedLocation?.city || "",
                country: country || resolvedLocation?.country || "",
+               locationSource,
                ipAddress: clientIp,
                userAgent: userAgent || "",
           });
@@ -87,14 +94,55 @@ router.post("/track", async (req, res) => {
      }
 });
 
+router.get("/summary", async (req, res) => {
+     try {
+          const { userId } = req.query;
+          if (!userId) {
+               return res.status(400).json({
+                    success: false,
+                    message: "A userId is required",
+               });
+          }
+
+          const visits = await Visit.find({ userId: String(userId) })
+               .sort({ visitedAt: -1 })
+               .limit(50)
+               .lean();
+
+          const totalDurationSeconds = visits.reduce((total, visit) => total + Number(visit.durationSeconds || 0), 0);
+          const latestVisit = visits[0] || null;
+
+          return res.status(200).json({
+               success: true,
+               summary: {
+                    userId: String(userId),
+                    totalDurationSeconds,
+                    totalPages: visits.length,
+                    lastVisit: latestVisit?.visitedAt || null,
+                    lastPage: latestVisit?.page || "/",
+                    lastLocation: latestVisit?.location || "Unknown",
+                    locationSource: latestVisit?.locationSource || "unavailable",
+               },
+          });
+     } catch (error) {
+          console.error("VISIT SUMMARY ERROR:", error);
+          return res.status(500).json({
+               success: false,
+               message: "Failed to fetch visit summary",
+               error: error.message,
+          });
+     }
+});
+
 router.get("/history", async (req, res) => {
      try {
           const { userId } = req.query;
+          const limit = Math.min(200, Number(req.query.limit || 200));
           const filter = userId ? { userId: String(userId) } : {};
 
           const visits = await Visit.find(filter)
                .sort({ visitedAt: -1 })
-               .limit(200)
+               .limit(limit)
                .lean();
 
           return res.status(200).json({

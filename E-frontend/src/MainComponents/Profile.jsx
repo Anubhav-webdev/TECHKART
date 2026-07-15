@@ -12,6 +12,7 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
+  const [visitSummary, setVisitSummary] = useState(null);
   const [newAddress, setNewAddress] = useState({ label: '', address: '', city: '', state: '', zip: '', country: '', phone: '' });
 
 const getAvatarUrl = (avatar) => {
@@ -40,6 +41,15 @@ const getAvatarUrl = (avatar) => {
       })
       .catch(() => { })
       .finally(() => setLoading(false));
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !user.id) return;
+
+    fetch(`${API_BASE_URL}/visits/summary?userId=${user.id}`)
+      .then((res) => res.json())
+      .then((data) => setVisitSummary(data.summary || null))
+      .catch(() => setVisitSummary(null));
   }, [user]);
 
   useEffect(() => {
@@ -197,6 +207,12 @@ const getAvatarUrl = (avatar) => {
             </div>
             <h2 className="mt-4 font-bold text-gray-100 text-lg">{profile?.fullName || profile?.username || 'User'}</h2>
             <p className="text-sm text-gray-400">Member since {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '—'}</p>
+            <div className="mt-4 w-full rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-3 text-left">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-cyan-400">Activity</p>
+              <p className="mt-2 text-sm text-gray-200">Last visit: {visitSummary?.lastVisit ? new Date(visitSummary.lastVisit).toLocaleString() : 'No visits yet'}</p>
+              <p className="text-sm text-gray-200">Time on pages: {visitSummary?.totalDurationSeconds ? `${Math.floor(visitSummary.totalDurationSeconds / 60)} min` : '0 min'}</p>
+              <p className="text-sm text-gray-200">Last page: {visitSummary?.lastPage || '—'}</p>
+            </div>
           </div>
 
           <nav className="bg-gray-900 rounded-2xl shadow-xl border border-gray-800 overflow-hidden">

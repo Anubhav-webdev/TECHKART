@@ -15,9 +15,21 @@ const visitSchema = new mongoose.Schema(
                type: String,
                default: "/",
           },
+          pageTitle: {
+               type: String,
+               default: "",
+          },
+          durationSeconds: {
+               type: Number,
+               default: 0,
+          },
           location: {
                type: String,
                default: "Unknown",
+          },
+          locationSource: {
+               type: String,
+               default: "unavailable",
           },
           city: {
                type: String,
