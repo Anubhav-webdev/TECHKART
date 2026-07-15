@@ -52,6 +52,11 @@ const AdminDashboard = () => {
   const [activityLoading, setActivityLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [chartMode, setChartMode] = useState("daily");
+  const [activityFilter, setActivityFilter] = useState("all");
+  const [activitySearch, setActivitySearch] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedUserHistory, setSelectedUserHistory] = useState([]);
+  const [selectedUserLoading, setSelectedUserLoading] = useState(false);
 
   const formatDuration = (seconds = 0) => {
     if (!seconds) return "0s";
@@ -158,6 +163,14 @@ const AdminDashboard = () => {
       .sort((a, b) => b.revenue - a.revenue);
   }, [users]);
 
+  const userRoleMap = useMemo(() => {
+    return users.reduce((acc, user) => {
+      const key = String(user._id || user.id || "");
+      if (key) acc[key] = user.role || "user";
+      return acc;
+    }, {});
+  }, [users]);
+
   const activitySummary = useMemo(() => {
     const grouped = {};
 
@@ -206,6 +219,47 @@ const AdminDashboard = () => {
       alert(err.message || "Unable to delete feedback");
     }
   };
+
+  const loadUserTimeline = async (userId) => {
+    if (!userId) {
+      setSelectedUserId("");
+      setSelectedUserHistory([]);
+      return;
+    }
+
+    setSelectedUserId(userId);
+    setSelectedUserLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/visits/history?userId=${encodeURIComponent(userId)}&limit=200`);
+      const data = await res.json();
+      setSelectedUserHistory(data.visits || []);
+    } catch (err) {
+      console.error("Visit timeline error:", err);
+      setSelectedUserHistory([]);
+    } finally {
+      setSelectedUserLoading(false);
+    }
+  };
+
+  const filteredActivitySummary = useMemo(() => {
+    const searchValue = activitySearch.trim().toLowerCase();
+
+    return activitySummary.filter((item) => {
+      const role = userRoleMap[String(item.userId || "")] || "user";
+      const matchesFilter = activityFilter === "all"
+        ? true
+        : activityFilter === "admin"
+          ? role === "admin"
+          : role !== "admin";
+
+      if (!matchesFilter) return false;
+      if (!searchValue) return true;
+
+      return [item.username, item.userId, item.lastPage, item.location]
+        .some((value) => String(value || "").toLowerCase().includes(searchValue));
+    });
+  }, [activitySearch, activityFilter, activitySummary, userRoleMap]);
 
   const monthlyStats = useMemo(() => {
     const map = {};
@@ -381,9 +435,28 @@ const AdminDashboard = () => {
 
           {panel === "activity" && (
             <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={styles.card}>
-              <div className="flex justify-between items-center mb-6">
-                <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
-                <h2 className="text-xs font-black tracking-[0.3em] text-cyan-500 uppercase">USER_ACTIVITY</h2>
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setPanel("main")} className={styles.actionBtn}><FaArrowLeft /> BACK</button>
+                  <h2 className="text-xs font-black tracking-[0.3em] text-cyan-500 uppercase">USER_ACTIVITY</h2>
+                </div>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                  <input
+                    value={activitySearch}
+                    onChange={(e) => setActivitySearch(e.target.value)}
+                    placeholder="Search user / page / location"
+                    className="w-full md:w-72 rounded border border-cyan-500/20 bg-slate-950/70 px-3 py-2 text-xs text-slate-200 outline-none focus:border-cyan-400"
+                  />
+                  <select
+                    value={activityFilter}
+                    onChange={(e) => setActivityFilter(e.target.value)}
+                    className="rounded border border-cyan-500/20 bg-slate-950/70 px-3 py-2 text-xs text-slate-200 outline-none focus:border-cyan-400"
+                  >
+                    <option value="all">All users</option>
+                    <option value="admin">Admins</option>
+                    <option value="user">Users</option>
+                  </select>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -397,8 +470,12 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(activityLoading ? Array.from({ length: 5 }) : activitySummary).map((item, idx) => (
-                      <tr key={item.userId || idx} className={styles.tableRow}>
+                    {(activityLoading ? Array.from({ length: 5 }) : filteredActivitySummary).map((item, idx) => (
+                      <tr
+                        key={item.userId || idx}
+                        className={`${styles.tableRow} cursor-pointer`}
+                        onClick={() => loadUserTimeline(item.userId)}
+                      >
                         <td className={styles.td}>{item.username || item.userId || "Guest"}</td>
                         <td className={styles.td}>{item.lastVisit ? new Date(item.lastVisit).toLocaleString() : "—"}</td>
                         <td className={styles.td}>{formatDuration(item.totalDurationSeconds)}</td>
@@ -415,6 +492,45 @@ const AdminDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="mt-6 border-t border-cyan-500/10 pt-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500">FULL_TIMELINE</h3>
+                  <span className="text-[10px] text-slate-500">
+                    {selectedUserId ? "Selected user timeline" : "Click a user row to inspect their full visit history"}
+                  </span>
+                </div>
+
+                {selectedUserLoading ? (
+                  <div className="rounded border border-cyan-500/10 bg-slate-950/50 p-4 text-sm text-slate-400">Loading timeline...</div>
+                ) : selectedUserHistory.length ? (
+                  <div className="space-y-3">
+                    {selectedUserHistory.map((entry, index) => (
+                      <div key={entry._id || `${entry.visitedAt}-${index}`} className="rounded border border-cyan-500/10 bg-slate-950/50 p-4">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-white">{entry.pageTitle || entry.page || "Unknown page"}</p>
+                            <p className="text-[11px] text-slate-400">{entry.page || "/"}</p>
+                          </div>
+                          <div className="text-right text-[11px] text-cyan-400">
+                            <p>{new Date(entry.visitedAt).toLocaleString()}</p>
+                            <p>{formatDuration(entry.durationSeconds || 0)}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-slate-400">
+                          <span>Location: {entry.location || "Unknown"}</span>
+                          <span>IP: {entry.ipAddress || "Unavailable"}</span>
+                          <span>Source: {entry.locationSource || "unavailable"}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded border border-dashed border-cyan-500/20 bg-slate-950/30 p-4 text-sm text-slate-400">
+                    No timeline selected yet.
+                  </div>
+                )}
               </div>
             </Motion.div>
           )}
