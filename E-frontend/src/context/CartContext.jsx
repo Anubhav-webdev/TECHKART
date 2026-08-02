@@ -4,6 +4,7 @@ import React, {
      useContext,
      useState,
      useEffect,
+     useRef,
 } from "react";
 
 import { useAuth } from "./AuthContext";
@@ -24,6 +25,7 @@ export const useCart = () => useContext(CartContext);
 // ========================================
 export const CartProvider = ({ children }) => {
      const { user } = useAuth();
+     const wasAuthenticatedRef = useRef(false);
 
      const { adjustStock, setStock } = useStock();
 
@@ -569,22 +571,32 @@ export const CartProvider = ({ children }) => {
      // CLEAR ON LOGOUT
      // ========================================
      useEffect(() => {
-          if (!user) {
-               (async () => {
-                    try {
-                         await releaseAllFromCart();
-                    } catch (err) {
-                         console.warn(
-                              "Release all failed:",
-                              err
-                         );
-                    }
+          const hasUser = Boolean(user?.id || user?._id);
 
-                    localStorage.removeItem(
-                         "cart"
-                    );
-               })();
+          if (hasUser) {
+               wasAuthenticatedRef.current = true;
+               return;
           }
+
+          if (!wasAuthenticatedRef.current) {
+               wasAuthenticatedRef.current = false;
+               return;
+          }
+
+          (async () => {
+               try {
+                    await releaseAllFromCart();
+               } catch (err) {
+                    console.warn(
+                         "Release all failed:",
+                         err
+                    );
+               }
+
+               localStorage.removeItem(
+                    "cart"
+               );
+          })();
      }, [user]);
 
      // ========================================
