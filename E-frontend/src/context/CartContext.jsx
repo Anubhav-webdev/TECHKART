@@ -55,6 +55,8 @@ export const CartProvider = ({ children }) => {
           }
      });
 
+     const hasSyncedCartRef = useRef(false);
+
      // ========================================
      // SAVE CART
      // ========================================
@@ -501,13 +503,35 @@ export const CartProvider = ({ children }) => {
      const syncLocalCartToServer = async () => {
           if (!user || !user.id || cart.length === 0) return;
 
-          for (const item of cart) {
-               if (!item?._id) continue;
+          const localCart = cart;
 
-               try {
-                    await fetch(
-                         `${API}/users/${user.id}/cart`,
-                         {
+          try {
+               const res = await fetch(`${API}/users/${user.id}/cart`);
+               if (!res.ok) {
+                    console.warn("Failed to fetch cart:", res.status);
+                    return;
+               }
+
+               const data = await res.json();
+               const serverCart = (data.cart || [])
+                    .map((item) => {
+                         if (!item?.product) return null;
+                         return {
+                              ...item.product,
+                              _id: String(item.product?._id || item.product?.id || ""),
+                              quantity: item.quantity,
+                         };
+                    })
+                    .filter(Boolean);
+
+               const serverIds = new Set(serverCart.map((item) => String(item._id)));
+               const localOnlyItems = localCart.filter(
+                    (item) => item._id && !serverIds.has(String(item._id))
+               );
+
+               for (const item of localOnlyItems) {
+                    try {
+                         await fetch(`${API}/users/${user.id}/cart`, {
                               method: "PUT",
                               headers: {
                                    "Content-Type":
@@ -515,56 +539,31 @@ export const CartProvider = ({ children }) => {
                               },
                               body: JSON.stringify({
                                    productId: item._id,
-                                   quantity:
-                                        item.quantity || 1,
+                                   quantity: item.quantity || 1,
                               }),
-                         }
-                    );
-               } catch (err) {
-                    console.warn(
-                         "Failed to sync cart item to server:",
-                         item._id,
-                         err.message
-                    );
+                         });
+                    } catch (err) {
+                         console.warn(
+                              "Failed to sync local-only cart item:",
+                              item._id,
+                              err.message
+                         );
+                    }
                }
+
+               setCart([...serverCart, ...localOnlyItems]);
+          } catch (err) {
+               console.warn("Cart fetch error:", err.message);
           }
      };
 
      useEffect(() => {
-          if (user && user.id) {
-               (async () => {
-                    try {
-                         await syncLocalCartToServer();
+          if (!user || !user.id || hasSyncedCartRef.current) return;
+          hasSyncedCartRef.current = true;
 
-                         const res = await fetch(
-                              `${API}/users/${user.id}/cart`
-                         );
-                         if (!res.ok) {
-                              console.warn(
-                                   "Failed to fetch cart:",
-                                   res.status
-                              );
-                              return;
-                         }
-                         const data = await res.json();
-                         const cartItems = (data.cart || [])
-                              .map((item) => {
-                                   if (!item?.product) return null;
-                                   return {
-                                        ...item.product,
-                                        quantity: item.quantity,
-                                   };
-                              })
-                              .filter(Boolean);
-                         setCart(cartItems);
-                    } catch (err) {
-                         console.warn(
-                              "Cart fetch error:",
-                              err.message
-                         );
-                    }
-               })();
-          }
+          (async () => {
+               await syncLocalCartToServer();
+          })();
      }, [user, API]);
 
      // ========================================
