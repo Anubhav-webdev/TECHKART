@@ -1,19 +1,4 @@
-#!/usr/bin/env node
-/*
-  Secure Admin Creator
-  --------------------
-  Usage:
-    1) Add the following to Backend/.env:
-       ADMIN_USERNAME=NeoPhoenix
-       ADMIN_EMAIL=admin@example.com
-       ADMIN_PHONE=9876543210
-       ADMIN_PASSWORD=yourStrongPassword
 
-    2) Run:
-       npm run create-admin
-
-  The script will connect to the DB, and create or update a user with role: 'admin'. Passwords are hashed by the User model pre-save hook.
-*/
 
 import dotenv from 'dotenv';
 dotenv.config();
